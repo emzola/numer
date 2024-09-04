@@ -19,7 +19,7 @@ message CreateInvoiceRequest {
   string due_date = 4;
   string billing_currency = 5;
   repeated InvoiceItem items = 6;
-  double discount_percentage = 7;
+  int64 discount_percentage = 7; // Represented as hundredths of a percent (e.g., 1000 = 10%)
   PaymentInformation payment_information = 8;
   string note = 9;
 }
@@ -74,7 +74,7 @@ message CancelInvoiceResponse {
 message InvoiceItem {
   string description = 1;
   int32 quantity = 2;
-  double unit_price = 3;
+  int64 unit_price = 3; // Represented in cents
 }
 
 // Invoice details
@@ -83,14 +83,17 @@ message Invoice {
   string user_id = 2;
   string customer_id = 3;
   string invoice_number = 4;
-  string issue_date = 5;
-  string due_date = 6;
-  string billing_currency = 7;
-  repeated InvoiceItem items = 8;
-  double discount_percentage = 9;
-  PaymentInformation payment_information = 10;
-  string note = 11;
-  InvoiceStatus status = 12;
+  InvoiceStatus status = 5;
+  string issue_date = 6;
+  string due_date = 7;
+  string billing_currency = 8;
+  repeated InvoiceItem items = 9;
+  int64 discount_percentage = 10; // Represented as hundredths of a percent (e.g., 1000 = 10%)
+  int64 subtotal = 11;            // Represented in cents
+  int64 discount = 12;            // Represented in cents
+  int64 total = 13;               // Represented in cents
+  PaymentInformation payment_information = 14;
+  string note = 15;
 }
 
 // Payment information details

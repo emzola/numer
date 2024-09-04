@@ -11,10 +11,10 @@ type Invoice struct {
 	DueDate            string
 	BillingCurrency    string
 	Items              []InvoiceItem
-	DiscountPercentage float64
-	Subtotal           float64
-	Discount           float64
-	Total              float64
+	DiscountPercentage int64 // Represented as hundredths of a percent (e.g., 1000 = 10%)
+	Subtotal           int64 // Represented in cents
+	Discount           int64 // Represented in cents
+	Total              int64 // Represented in cents
 	PaymentInformation PaymentInformation
 	Note               string
 }
@@ -22,7 +22,7 @@ type Invoice struct {
 type InvoiceItem struct {
 	Description string
 	Quantity    int32
-	UnitPrice   float64
+	UnitPrice   int64 // Represented in cents
 }
 
 type PaymentInformation struct {
