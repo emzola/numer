@@ -4,7 +4,7 @@
 
 # Define the paths
 PROTO_DIR := proto
-INVOICE_PROTO := $(PROTO_DIR)/invoiceservice/invoice.proto
+INVOICE_PROTO := $(PROTO_DIR)/invoice.proto
 
 INVOICE_OUT_DIR := invoiceservice/genproto
 
@@ -36,5 +36,5 @@ clean:
 	
 # Run the invoice service
 .PHONY: invoice
-rider:
+invoice:
 	@go run invoiceservice/cmd/*.go

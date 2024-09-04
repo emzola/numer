@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             v4.23.4
-// source: proto/invoiceservice/invoice.proto
+// source: proto/invoice.proto
 
 package genproto
 
@@ -253,5 +253,5 @@ var InvoiceService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/invoiceservice/invoice.proto",
+	Metadata: "proto/invoice.proto",
 }

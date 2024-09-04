@@ -15,11 +15,13 @@ service InvoiceService {
 message CreateInvoiceRequest {
   string user_id = 1;
   string customer_id = 2;
-  repeated InvoiceItem items = 3;
+  string issue_date = 3;
   string due_date = 4;
   string billing_currency = 5;
-  string note = 6;
-  PaymentInformation payment_information = 7;
+  repeated InvoiceItem items = 6;
+  double discount_percentage = 7;
+  PaymentInformation payment_information = 8;
+  string note = 9;
 }
 
 message CreateInvoiceResponse {
@@ -78,17 +80,17 @@ message InvoiceItem {
 // Invoice details
 message Invoice {
   string invoice_id = 1;
-  string invoice_number = 2; // New
-  string user_id = 3;
-  string customer_id = 4;
-  repeated InvoiceItem items = 5;
-  string issue_date = 6;
-  string due_date = 7;
-  double total_amount = 8;
-  string billing_currency = 9;
-  InvoiceStatus status = 10;
+  string user_id = 2;
+  string customer_id = 3;
+  string invoice_number = 4;
+  string issue_date = 5;
+  string due_date = 6;
+  string billing_currency = 7;
+  repeated InvoiceItem items = 8;
+  double discount_percentage = 9;
+  PaymentInformation payment_information = 10;
   string note = 11;
-  PaymentInformation payment_information = 12; // New
+  InvoiceStatus status = 12;
 }
 
 // Payment information details
@@ -105,5 +107,5 @@ enum InvoiceStatus {
   PAID = 1;
   OVERDUE = 2;
   DRAFT = 3;
-  CANCELLED = 4; // New
+  CANCELLED = 4;
 }
