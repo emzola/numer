@@ -26,15 +26,40 @@ invoice_proto: $(INVOICE_PROTO)
 	$(PROTOC) --go_out=. --go-grpc_out=. $(INVOICE_PROTO)
 	
 # Clean the generated files
-.PHONY: clean
-clean:
+.PHONY: cleanproto
+cleanproto:
 	rm -f $(INVOICE_OUT_DIR)/*.pb.go
 
 # ==================================================================================== #
 # DEVELOPMENT
 # ==================================================================================== #
 	
-# Run the invoice service
-.PHONY: invoice
-invoice:
-	@go run invoiceservice/cmd/*.go
+.PHONY: build
+build:
+	@echo "Building services..."
+	docker-compose build
+
+.PHONY: up
+up:
+	@echo "Starting services..."
+	docker-compose up -d
+
+.PHONY: down
+down:
+	@echo "Stopping services..."
+	docker-compose down
+
+.PHONY: migrate
+migrate:
+	@echo "Applying migrations for invoice service..."
+	docker-compose run --rm invoiceservice golang-migrate -path /migrations -database "postgres://${INVOICE_DB_USER}:${INVOICE_DB_PASSWORD}@${INVOICE_DB_HOST}:${INVOICE_DB_PORT}/${INVOICE_DB_NAME}?sslmode=disable" up
+
+.PHONY: test
+test:
+	@echo "Running tests for invoice service..."
+	cd invoiceservice && go test ./...
+
+.PHONY: clean
+clean:
+	@echo "Removing containers..."
+	docker-compose down -v

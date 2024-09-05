@@ -39,7 +39,7 @@ func main() {
 	port := cfg.API.Port
 
 	// Establish database connection
-	connStr := os.Getenv("DBCONN")
+	connStr := "postgres://" + os.Getenv("INVOICE_DB_USER") + ":" + os.Getenv("INVOICE_DB_PASSWORD") + "@invoice-db:" + os.Getenv("INVOICE_DB_PORT") + "/" + os.Getenv("INVOICE_DB_NAME") + "?sslmode=disable"
 	db, err := sql.Open("pgx", connStr)
 	if err != nil {
 		panic("failed to connect to database")

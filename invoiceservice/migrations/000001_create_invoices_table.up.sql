@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS invoices (
+    id SERIAL PRIMARY KEY,
+    invoice_id UUID UNIQUE NOT NULL,
+    user_id TEXT NOT NULL,
+    customer_id TEXT NOT NULL,
+    invoice_number TEXT UNIQUE NOT NULL,
+    status TEXT NOT NULL,
+    issue_date DATE NOT NULL,
+    due_date DATE NOT NULL,
+    billing_currency TEXT NOT NULL,
+    discount_percentage INT NOT NULL,
+    subtotal BIGINT NOT NULL,
+    discount BIGINT NOT NULL,
+    total BIGINT NOT NULL,
+    account_name TEXT NOT NULL,
+    account_number TEXT NOT NULL,
+    bank_name TEXT NOT NULL,
+    routing_number TEXT NOT NULL,
+    note TEXT
+);
