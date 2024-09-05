@@ -8,10 +8,18 @@ services:
       - DB_URL=postgres://${INVOICE_DB_USER}:${INVOICE_DB_PASSWORD}@${INVOICE_DB_HOST}:${INVOICE_DB_PORT}/${INVOICE_DB_NAME}?sslmode=disable
     depends_on:
       - invoice-db
+      - consul
     volumes:
       - ./invoiceservice/migrations:/migrations
     ports:
-      - "8081:8080"
+      - "8080:8080"
+      
+  consul:
+    image: consul:1.14
+    container_name: consul
+    ports:
+      - "8500:8500"
+    command: "agent -dev -client=0.0.0.0"
 
   invoice-db:
     image: postgres:16

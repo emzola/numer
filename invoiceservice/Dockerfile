@@ -3,7 +3,7 @@ FROM golang:latest AS builder
 WORKDIR /app
 COPY . .
 RUN go mod download
-RUN go build -o invoiceservice ./cmd
+RUN GOOS=linux GOARCH=amd64 go build -o invoiceservice ./cmd
 
 # Create a minimal image to run the service
 FROM alpine:3.18
@@ -18,5 +18,12 @@ RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.15.1/
 
 COPY --from=builder /app/invoiceservice .
 COPY ./migrations /migrations
+
+# Ensure the binary is executable
+RUN chmod +x invoiceservice
+
+# Debug: Check if the binary is present and executable
+RUN ls -la /app
+
 EXPOSE 8080
 CMD ["./invoiceservice"]

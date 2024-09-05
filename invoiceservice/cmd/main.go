@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"sync"
 	"syscall"
+	"time"
 
 	"database/sql"
 
@@ -17,11 +18,15 @@ import (
 	"github.com/emzola/numer/invoiceservice/internal/handler"
 	"github.com/emzola/numer/invoiceservice/internal/repository"
 	"github.com/emzola/numer/invoiceservice/internal/service"
+	"github.com/emzola/numer/invoiceservice/pkg/discovery"
+	consul "github.com/emzola/numer/invoiceservice/pkg/discovery/consul"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"gopkg.in/yaml.v3"
 )
+
+const serviceName = "invoiceservice"
 
 func main() {
 	// Initialize logger
@@ -42,7 +47,26 @@ func main() {
 	}
 	port := cfg.API.Port
 
-	_, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(context.Background())
+
+	// Service discovery
+	registry, err := consul.NewRegistry("localhost:8500")
+	if err != nil {
+		panic(err)
+	}
+	instanceID := discovery.GenerateInstanceID(serviceName)
+	if err := registry.Register(ctx, instanceID, serviceName, fmt.Sprintf("localhost:%d", port)); err != nil {
+		panic(err)
+	}
+	go func() {
+		for {
+			if err := registry.ReportHealthyState(instanceID, serviceName); err != nil {
+				logger.Error("failed to report healthy state", slog.Any("error", err))
+			}
+			time.Sleep(1 * time.Second)
+		}
+	}()
+	defer registry.Deregister(ctx, instanceID, serviceName)
 
 	// Establish database connection
 	connStr := "postgres://" + os.Getenv("INVOICE_DB_USER") + ":" + os.Getenv("INVOICE_DB_PASSWORD") + "@invoice-db:" + os.Getenv("INVOICE_DB_PORT") + "/" + os.Getenv("INVOICE_DB_NAME") + "?sslmode=disable"
