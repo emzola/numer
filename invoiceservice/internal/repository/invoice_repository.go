@@ -11,6 +11,7 @@ import (
 
 var (
 	ErrInvoiceNumberIncrement = errors.New("failed to increment invoice number")
+	ErrNotFound               = errors.New("not found")
 )
 
 type InvoiceRepository struct {
@@ -77,4 +78,46 @@ func (r *InvoiceRepository) Create(ctx context.Context, invoice model.Invoice) e
 	}
 
 	return tx.Commit()
+}
+
+func (r *InvoiceRepository) GetByID(ctx context.Context, invoiceID string) (*model.Invoice, error) {
+	var invoice model.Invoice
+	query := `SELECT invoice_id, user_id, customer_id, invoice_number, status, issue_date, due_date, billing_currency,
+	                 discount_percentage, subtotal, discount, total, account_name, account_number, bank_name, routing_number, note
+	          FROM invoices WHERE invoice_id = $1`
+
+	err := r.db.QueryRowContext(ctx, query, invoiceID).Scan(
+		&invoice.InvoiceID, &invoice.UserID, &invoice.CustomerID, &invoice.InvoiceNumber,
+		&invoice.Status, &invoice.IssueDate, &invoice.DueDate, &invoice.BillingCurrency,
+		&invoice.DiscountPercentage, &invoice.Subtotal, &invoice.Discount, &invoice.Total,
+		&invoice.PaymentInformation.AccountName, &invoice.PaymentInformation.AccountNumber,
+		&invoice.PaymentInformation.BankName, &invoice.PaymentInformation.RoutingNumber, &invoice.Note,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+
+	// Query for invoice items
+	itemsQuery := `SELECT description, quantity, unit_price FROM invoice_items WHERE invoice_id = $1`
+	rows, err := r.db.QueryContext(ctx, itemsQuery, invoiceID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	// Populate invoice items
+	var items []model.InvoiceItem
+	for rows.Next() {
+		var item model.InvoiceItem
+		if err := rows.Scan(&item.Description, &item.Quantity, &item.UnitPrice); err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+	invoice.Items = items
+
+	return &invoice, nil
 }

@@ -20,6 +20,7 @@ var (
 type InvoiceRepository interface {
 	IncrementInvoiceNumber(ctx context.Context) (string, error)
 	Create(ctx context.Context, invoice model.Invoice) error
+	GetByID(ctx context.Context, invoiceID string) (*model.Invoice, error)
 }
 
 type InvoiceService struct {
@@ -62,6 +63,20 @@ func (s *InvoiceService) CreateInvoice(ctx context.Context, invoice model.Invoic
 	}
 
 	return &invoice, nil
+}
+
+func (s *InvoiceService) GetInvoice(ctx context.Context, invoiceID string) (*model.Invoice, error) {
+	// Call repository to fetch the invoice by its ID
+	invoice, err := s.repo.GetByID(ctx, invoiceID)
+	if err != nil {
+		switch {
+		case errors.Is(err, repository.ErrNotFound):
+			return nil, ErrNotFound
+		default:
+			return nil, err
+		}
+	}
+	return invoice, nil
 }
 
 // ConvertDecimalToCents converts a decimal.Decimal to int64 (cents).

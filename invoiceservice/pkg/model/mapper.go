@@ -16,3 +16,38 @@ func ConvertProtoItemsToInvoiceItems(protoItems []*invoicepb.InvoiceItem) []Invo
 	}
 	return items
 }
+
+// Helper function to convert Go model struct to protobuf Invoice message
+func ConvertInvoiceToProto(inv *Invoice) *invoicepb.Invoice {
+	protoItems := make([]*invoicepb.InvoiceItem, len(inv.Items))
+	for i, item := range inv.Items {
+		protoItems[i] = &invoicepb.InvoiceItem{
+			Description: item.Description,
+			Quantity:    item.Quantity,
+			UnitPrice:   item.UnitPrice,
+		}
+	}
+
+	return &invoicepb.Invoice{
+		InvoiceId:          inv.InvoiceID,
+		UserId:             inv.UserID,
+		CustomerId:         inv.CustomerID,
+		InvoiceNumber:      inv.InvoiceNumber,
+		Status:             invoicepb.InvoiceStatus(inv.Status),
+		IssueDate:          inv.IssueDate,
+		DueDate:            inv.DueDate,
+		BillingCurrency:    inv.BillingCurrency,
+		Items:              protoItems,
+		DiscountPercentage: inv.DiscountPercentage,
+		Subtotal:           inv.Subtotal,
+		Discount:           inv.Discount,
+		Total:              inv.Total,
+		PaymentInformation: &invoicepb.PaymentInformation{
+			AccountName:   inv.PaymentInformation.AccountName,
+			AccountNumber: inv.PaymentInformation.AccountNumber,
+			BankName:      inv.PaymentInformation.BankName,
+			RoutingNumber: inv.PaymentInformation.RoutingNumber,
+		},
+		Note: inv.Note,
+	}
+}

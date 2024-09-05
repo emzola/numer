@@ -70,3 +70,24 @@ func mapToGRPCErrorCode(err error) codes.Code {
 		return codes.Internal
 	}
 }
+
+func (s *InvoiceServiceServer) GetInvoice(ctx context.Context, req *invoicepb.GetInvoiceRequest) (*invoicepb.GetInvoiceResponse, error) {
+	if req == nil || req.InvoiceId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, service.ErrInvalidRequest.Error())
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	invoice, err := s.service.GetInvoice(ctx, req.InvoiceId)
+	if err != nil {
+		code, errMsg := mapToGRPCErrorCode(err), err.Error()
+		return nil, status.Errorf(code, errMsg)
+	}
+
+	response := &invoicepb.GetInvoiceResponse{
+		Invoice: model.ConvertInvoiceToProto(invoice),
+	}
+
+	return response, nil
+}
