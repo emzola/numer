@@ -1,11 +1,15 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"net"
 	"os"
+	"os/signal"
 	"path/filepath"
+	"sync"
+	"syscall"
 
 	"database/sql"
 
@@ -38,6 +42,8 @@ func main() {
 	}
 	port := cfg.API.Port
 
+	_, cancel := context.WithCancel(context.Background())
+
 	// Establish database connection
 	connStr := "postgres://" + os.Getenv("INVOICE_DB_USER") + ":" + os.Getenv("INVOICE_DB_PASSWORD") + "@invoice-db:" + os.Getenv("INVOICE_DB_PORT") + "/" + os.Getenv("INVOICE_DB_NAME") + "?sslmode=disable"
 	db, err := sql.Open("pgx", connStr)
@@ -61,8 +67,24 @@ func main() {
 		logger.Error("failed to listen", slog.Any("error", err))
 	}
 
+	// Graceful shutdown
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		s := <-stop
+		cancel()
+		logger.Info("shutting down gracefully", slog.String("signal", s.String()))
+		grpcServer.GracefulStop()
+		logger.Info("server stopped")
+	}()
+
 	logger.Info("invoice service running", slog.Int("port", port))
 	if err := grpcServer.Serve(lis); err != nil {
 		panic(err)
 	}
+
+	wg.Wait()
 }
