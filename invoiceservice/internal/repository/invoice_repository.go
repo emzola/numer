@@ -173,6 +173,15 @@ func (r *InvoiceRepository) ListByUserID(ctx context.Context, userID string, pag
 	return invoices, nextPageToken, nil
 }
 
+func (r *InvoiceRepository) UpdateStatus(ctx context.Context, invoiceID string, status model.InvoiceStatus) error {
+	query := `UPDATE invoices SET status = $1 WHERE invoice_id = $2`
+	_, err := r.db.ExecContext(ctx, query, status, invoiceID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // fetchInvoiceItems fetches invoice items by invoice ID
 func (r *InvoiceRepository) fetchInvoiceItems(ctx context.Context, invoiceID string) ([]model.InvoiceItem, error) {
 	var items []model.InvoiceItem

@@ -22,6 +22,7 @@ type InvoiceRepository interface {
 	Create(ctx context.Context, invoice model.Invoice) error
 	GetByID(ctx context.Context, invoiceID string) (*model.Invoice, error)
 	ListByUserID(ctx context.Context, userID string, pageSize int, pageToken string) ([]*model.Invoice, string, error)
+	UpdateStatus(ctx context.Context, invoiceID string, status model.InvoiceStatus) error
 }
 
 type InvoiceService struct {
@@ -88,6 +89,28 @@ func (s *InvoiceService) ListInvoices(ctx context.Context, userID string, pageSi
 	}
 
 	return invoices, nextPageToken, nil
+}
+
+func (s *InvoiceService) UpdateInvoiceStatus(ctx context.Context, invoiceID string, status model.InvoiceStatus) error {
+	// Fetch the invoice from the repository
+	invoice, err := s.repo.GetByID(ctx, invoiceID)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return ErrNotFound
+		}
+		return err
+	}
+
+	// Update the invoice status
+	invoice.Status = status
+
+	// Persist the updated invoice status in the repository
+	err = s.repo.UpdateStatus(ctx, invoiceID, status)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // ConvertDecimalToCents converts a decimal.Decimal to int64 (cents).

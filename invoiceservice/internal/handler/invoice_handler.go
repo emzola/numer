@@ -116,3 +116,21 @@ func (s *InvoiceServiceServer) ListInvoices(ctx context.Context, req *invoicepb.
 		NextPageToken: nextPageToken,
 	}, nil
 }
+
+func (s *InvoiceServiceServer) UpdateInvoiceStatus(ctx context.Context, req *invoicepb.UpdateInvoiceStatusRequest) (*invoicepb.UpdateInvoiceStatusResponse, error) {
+	if req == nil || req.InvoiceId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, service.ErrInvalidRequest.Error())
+	}
+
+	invoiceStatus := model.InvoiceStatus(req.Status)
+
+	err := s.service.UpdateInvoiceStatus(ctx, req.InvoiceId, invoiceStatus)
+	if err != nil {
+		code, errMsg := mapToGRPCErrorCode(err), err.Error()
+		return nil, status.Errorf(code, errMsg)
+	}
+
+	return &invoicepb.UpdateInvoiceStatusResponse{
+		Message: "Invoice status updated successfully",
+	}, nil
+}
