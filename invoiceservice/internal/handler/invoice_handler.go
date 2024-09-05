@@ -134,3 +134,19 @@ func (s *InvoiceServiceServer) UpdateInvoiceStatus(ctx context.Context, req *inv
 		Message: "Invoice status updated successfully",
 	}, nil
 }
+
+func (s *InvoiceServiceServer) CancelInvoice(ctx context.Context, req *invoicepb.CancelInvoiceRequest) (*invoicepb.CancelInvoiceResponse, error) {
+	if req == nil || req.InvoiceId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, service.ErrInvalidRequest.Error())
+	}
+
+	err := s.service.CancelInvoice(ctx, req.InvoiceId)
+	if err != nil {
+		code, errMsg := mapToGRPCErrorCode(err), err.Error()
+		return nil, status.Errorf(code, errMsg)
+	}
+
+	return &invoicepb.CancelInvoiceResponse{
+		Message: "Invoice cancelled successfully",
+	}, nil
+}

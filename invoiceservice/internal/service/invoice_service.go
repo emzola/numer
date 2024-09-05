@@ -113,6 +113,30 @@ func (s *InvoiceService) UpdateInvoiceStatus(ctx context.Context, invoiceID stri
 	return nil
 }
 
+func (s *InvoiceService) CancelInvoice(ctx context.Context, invoiceID string) error {
+	// Fetch the invoice from the repository
+	invoice, err := s.repo.GetByID(ctx, invoiceID)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return ErrNotFound
+		}
+		return err
+	}
+
+	// Check if the invoice is already cancelled
+	if invoice.Status == model.CANCELLED {
+		return ErrInvalidRequest
+	}
+
+	// Update the invoice status to CANCELLED
+	err = s.repo.UpdateStatus(ctx, invoiceID, model.CANCELLED)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // ConvertDecimalToCents converts a decimal.Decimal to int64 (cents).
 func ConvertDecimalToCents(d decimal.Decimal) int64 {
 	cents := d.Mul(decimal.NewFromInt(100))
