@@ -5,7 +5,7 @@ services:
   invoiceservice:
     build: ./invoiceservice
     environment:
-      - DATABASE_URL=${DATABASE_URL}
+      - DB_URL=postgres://${INVOICE_DB_USER}:${INVOICE_DB_PASSWORD}@${INVOICE_DB_HOST}:${INVOICE_DB_PORT}/${INVOICE_DB_NAME}?sslmode=disable
     depends_on:
       - invoice-db
     volumes:
