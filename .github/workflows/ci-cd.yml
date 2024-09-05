@@ -39,9 +39,9 @@ jobs:
       run: |
         make up
 
-    - name: Apply migrations
-      run: |
-        make migrate
+    # - name: Apply migrations
+    #   run: |
+    #     make migrate
 
     - name: Run tests
       run: |
