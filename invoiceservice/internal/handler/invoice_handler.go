@@ -91,3 +91,28 @@ func (s *InvoiceServiceServer) GetInvoice(ctx context.Context, req *invoicepb.Ge
 
 	return response, nil
 }
+
+func (s *InvoiceServiceServer) ListInvoices(ctx context.Context, req *invoicepb.ListInvoicesRequest) (*invoicepb.ListInvoicesResponse, error) {
+	if req == nil || req.UserId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, service.ErrInvalidRequest.Error())
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	invoices, nextPageToken, err := s.service.ListInvoices(ctx, req.UserId, int(req.PageSize), req.PageToken)
+	if err != nil {
+		code, errMsg := mapToGRPCErrorCode(err), err.Error()
+		return nil, status.Errorf(code, errMsg)
+	}
+
+	protoInvoices := make([]*invoicepb.Invoice, len(invoices))
+	for i, invoice := range invoices {
+		protoInvoices[i] = model.ConvertInvoiceToProto(invoice)
+	}
+
+	return &invoicepb.ListInvoicesResponse{
+		Invoices:      protoInvoices,
+		NextPageToken: nextPageToken,
+	}, nil
+}

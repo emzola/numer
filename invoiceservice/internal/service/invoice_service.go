@@ -21,6 +21,7 @@ type InvoiceRepository interface {
 	IncrementInvoiceNumber(ctx context.Context) (string, error)
 	Create(ctx context.Context, invoice model.Invoice) error
 	GetByID(ctx context.Context, invoiceID string) (*model.Invoice, error)
+	ListByUserID(ctx context.Context, userID string, pageSize int, pageToken string) ([]*model.Invoice, string, error)
 }
 
 type InvoiceService struct {
@@ -77,6 +78,16 @@ func (s *InvoiceService) GetInvoice(ctx context.Context, invoiceID string) (*mod
 		}
 	}
 	return invoice, nil
+}
+
+func (s *InvoiceService) ListInvoices(ctx context.Context, userID string, pageSize int, pageToken string) ([]*model.Invoice, string, error) {
+	// Call repository to fetch paginated invoices
+	invoices, nextPageToken, err := s.repo.ListByUserID(ctx, userID, pageSize, pageToken)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return invoices, nextPageToken, nil
 }
 
 // ConvertDecimalToCents converts a decimal.Decimal to int64 (cents).
