@@ -14,19 +14,19 @@ import (
 
 	"database/sql"
 
-	invoicepb "github.com/emzola/numer/invoiceservice/genproto"
-	"github.com/emzola/numer/invoiceservice/internal/handler"
-	"github.com/emzola/numer/invoiceservice/internal/repository"
-	"github.com/emzola/numer/invoiceservice/internal/service"
-	"github.com/emzola/numer/invoiceservice/pkg/discovery"
-	consul "github.com/emzola/numer/invoiceservice/pkg/discovery/consul"
+	userpb "github.com/emzola/numer/userservice/genproto"
+	"github.com/emzola/numer/userservice/internal/handler"
+	"github.com/emzola/numer/userservice/internal/repository"
+	"github.com/emzola/numer/userservice/internal/service"
+	"github.com/emzola/numer/userservice/pkg/discovery"
+	consul "github.com/emzola/numer/userservice/pkg/discovery/consul"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"gopkg.in/yaml.v3"
 )
 
-const serviceName = "invoiceservice"
+const serviceName = "userservice"
 
 func main() {
 	// Initialize logger
@@ -35,7 +35,7 @@ func main() {
 	slog.SetDefault(logger)
 
 	// Open and parse yaml configuration file
-	configFilePath := filepath.Join("invoiceservice", "configs", "base.yaml")
+	configFilePath := filepath.Join("userservice", "configs", "base.yaml")
 	f, err := os.Open(configFilePath)
 	if err != nil {
 		logger.Error("failed to open configuration file", slog.Any("error", err))
@@ -69,7 +69,7 @@ func main() {
 	defer registry.Deregister(ctx, instanceID, serviceName)
 
 	// Establish database connection
-	connStr := "postgres://" + os.Getenv("INVOICE_DB_USER") + ":" + os.Getenv("INVOICE_DB_PASSWORD") + "@" + os.Getenv("INVOICE_DB_HOST") + os.Getenv("INVOICE_DB_PORT") + "/" + os.Getenv("INVOICE_DB_NAME") + "?sslmode=disable"
+	connStr := "postgres://" + os.Getenv("USER_DB_USER") + ":" + os.Getenv("USER_DB_PASSWORD") + "@" + os.Getenv("USER_DB_HOST") + os.Getenv("USER_DB_PORT") + "/" + os.Getenv("USER_DB_NAME") + "?sslmode=disable"
 	db, err := sql.Open("pgx", connStr)
 	if err != nil {
 		panic("failed to connect to database")
@@ -78,13 +78,13 @@ func main() {
 	logger.Info("database connection established")
 
 	// Initialize repository, service and server
-	repo := repository.NewInvoiceRepository(db)
-	svc := service.NewInvoiceService(repo)
-	server := handler.NewInvoiceServiceServer(svc)
+	repo := repository.NewUserRepository(db)
+	svc := service.NewUserService(repo)
+	server := handler.NewUserServiceServer(svc)
 
 	grpcServer := grpc.NewServer()
 	reflection.Register(grpcServer)
-	invoicepb.RegisterInvoiceServiceServer(grpcServer, server)
+	userpb.RegisterUserServiceServer(grpcServer, server)
 
 	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%v", port))
 	if err != nil {
@@ -105,7 +105,7 @@ func main() {
 		logger.Info("server stopped")
 	}()
 
-	logger.Info("invoice service running", slog.Int("port", port))
+	logger.Info("user service running", slog.Int("port", port))
 	if err := grpcServer.Serve(lis); err != nil {
 		panic(err)
 	}

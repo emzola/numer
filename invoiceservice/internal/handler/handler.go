@@ -59,18 +59,6 @@ func (s *InvoiceServiceServer) CreateInvoice(ctx context.Context, req *invoicepb
 	}, nil
 }
 
-// mapToGRPCErrorCode maps domain-specific errors to gRPC status codes.
-func mapToGRPCErrorCode(err error) codes.Code {
-	switch {
-	case errors.Is(err, service.ErrNotFound):
-		return codes.NotFound
-	case errors.Is(err, service.ErrInvalidRequest):
-		return codes.InvalidArgument
-	default:
-		return codes.Internal
-	}
-}
-
 func (s *InvoiceServiceServer) GetInvoice(ctx context.Context, req *invoicepb.GetInvoiceRequest) (*invoicepb.GetInvoiceResponse, error) {
 	if req == nil || req.InvoiceId == "" {
 		return nil, status.Errorf(codes.InvalidArgument, service.ErrInvalidRequest.Error())
@@ -149,4 +137,16 @@ func (s *InvoiceServiceServer) CancelInvoice(ctx context.Context, req *invoicepb
 	return &invoicepb.CancelInvoiceResponse{
 		Message: "Invoice cancelled successfully",
 	}, nil
+}
+
+// mapToGRPCErrorCode maps domain-specific errors to gRPC status codes.
+func mapToGRPCErrorCode(err error) codes.Code {
+	switch {
+	case errors.Is(err, service.ErrNotFound):
+		return codes.NotFound
+	case errors.Is(err, service.ErrInvalidRequest):
+		return codes.InvalidArgument
+	default:
+		return codes.Internal
+	}
 }
