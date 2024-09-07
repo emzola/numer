@@ -2,28 +2,27 @@ package main
 
 import (
 	"context"
+	"database/sql"
+	"flag"
 	"fmt"
 	"log/slog"
 	"net"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"sync"
 	"syscall"
 	"time"
 
-	"database/sql"
-
-	userpb "github.com/emzola/numer/userservice/genproto"
+	"github.com/emzola/numer/userservice/config"
 	"github.com/emzola/numer/userservice/internal/handler"
 	"github.com/emzola/numer/userservice/internal/repository"
 	"github.com/emzola/numer/userservice/internal/service"
 	"github.com/emzola/numer/userservice/pkg/discovery"
 	consul "github.com/emzola/numer/userservice/pkg/discovery/consul"
+	pb "github.com/emzola/numer/userservice/proto"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-	"gopkg.in/yaml.v3"
 )
 
 const serviceName = "userservice"
@@ -34,28 +33,20 @@ func main() {
 	logger := slog.New(logHandler)
 	slog.SetDefault(logger)
 
-	// Open and parse yaml configuration file
-	configFilePath := filepath.Join("userservice", "configs", "base.yaml")
-	f, err := os.Open(configFilePath)
-	if err != nil {
-		logger.Error("failed to open configuration file", slog.Any("error", err))
-	}
-	defer f.Close()
-	var cfg config
-	if err := yaml.NewDecoder(f).Decode(&cfg); err != nil {
-		logger.Error("failed to parse configuration", slog.Any("error", err))
-	}
-	port := cfg.API.Port
+	// Load configuration
+	var cfg config.Params
+	flag.StringVar(&cfg.GRPCServerAddress, "server-address", os.Getenv("GRPC_SERVER_ADDRESS"), "GRPC server address")
+	flag.StringVar(&cfg.DatabaseURL, "database-url", os.Getenv("DATABASE_URL"), "POSTGRESQL database URL")
 
 	ctx, cancel := context.WithCancel(context.Background())
 
 	// Service discovery
-	registry, err := consul.NewRegistry("localhost:8500")
+	registry, err := consul.NewRegistry("consul:8500")
 	if err != nil {
 		panic(err)
 	}
 	instanceID := discovery.GenerateInstanceID(serviceName)
-	if err := registry.Register(ctx, instanceID, serviceName, fmt.Sprintf("localhost:%d", port)); err != nil {
+	if err := registry.Register(ctx, instanceID, serviceName, fmt.Sprintf("localhost%v", cfg.GRPCServerAddress)); err != nil {
 		panic(err)
 	}
 	go func() {
@@ -68,25 +59,24 @@ func main() {
 	}()
 	defer registry.Deregister(ctx, instanceID, serviceName)
 
-	// Establish database connection
-	connStr := "postgres://" + os.Getenv("USER_DB_USER") + ":" + os.Getenv("USER_DB_PASSWORD") + "@" + os.Getenv("USER_DB_HOST") + os.Getenv("USER_DB_PORT") + "/" + os.Getenv("USER_DB_NAME") + "?sslmode=disable"
-	db, err := sql.Open("pgx", connStr)
+	// Connect to PostgreSQL database
+	dbpool, err := sql.Open("pgx", cfg.DatabaseURL)
 	if err != nil {
-		panic("failed to connect to database")
+		logger.Error("failed to connect to the database", slog.Any("error", err))
 	}
-	defer db.Close()
+	defer dbpool.Close()
 	logger.Info("database connection established")
 
 	// Initialize repository, service and server
-	repo := repository.NewUserRepository(db)
+	repo := repository.NewUserRepository(dbpool)
 	svc := service.NewUserService(repo)
-	server := handler.NewUserServiceServer(svc)
+	server := handler.NewUserHandler(svc)
 
 	grpcServer := grpc.NewServer()
 	reflection.Register(grpcServer)
-	userpb.RegisterUserServiceServer(grpcServer, server)
+	pb.RegisterUserServiceServer(grpcServer, server)
 
-	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%v", port))
+	lis, err := net.Listen("tcp", fmt.Sprintf("localhost%v", cfg.GRPCServerAddress))
 	if err != nil {
 		logger.Error("failed to listen", slog.Any("error", err))
 	}
@@ -105,7 +95,7 @@ func main() {
 		logger.Info("server stopped")
 	}()
 
-	logger.Info("user service running", slog.Int("port", port))
+	logger.Info("user service running", slog.String("port", cfg.GRPCServerAddress))
 	if err := grpcServer.Serve(lis); err != nil {
 		panic(err)
 	}

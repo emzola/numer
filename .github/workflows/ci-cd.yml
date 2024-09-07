@@ -13,19 +13,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    env:
-      INVOICE_DB_USER: ${{ secrets.INVOICE_DB_USER }}
-      INVOICE_DB_PASSWORD: ${{ secrets.INVOICE_DB_PASSWORD }}
-      INVOICE_DB_NAME: ${{ secrets.INVOICE_DB_NAME }}
-      INVOICE_DB_PORT: ${{ secrets.INVOICE_DB_PORT }}
-      INVOICE_DB_HOST: ${{ secrets.INVOICE_DB_HOST }}
-      USER_DB_USER: ${{ secrets.USER_DB_USER }}
-      USER_DB_PASSWORD: ${{ secrets.USER_DB_PASSWORD }}
-      USER_DB_HOST: ${{ secrets.USER_DB_HOST }}
-      USER_DB_PORT: ${{ secrets.USER_DB_PORT }}
-      USER_DB_NAME: ${{ secrets.USER_DB_NAME }}
-      
+    
     steps:
     - name: Checkout code
       uses: actions/checkout@v4

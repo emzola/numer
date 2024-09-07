@@ -1,14 +1,14 @@
 # ==================================================================================== #
-# PROTOBUF
+# PROTO
 # ==================================================================================== #
 
 # Define the paths
 PROTO_DIR := proto
 INVOICE_PROTO := $(PROTO_DIR)/invoice.proto
-USER_PROTO := $(PROTO_DIR)/user.proto
+USER_PROTO := user-service/$(PROTO_DIR)/user.proto
 
 INVOICE_OUT_DIR := invoiceservice/genproto
-USER_OUT_DIR := userservice/genproto
+USER_OUT_DIR := user-service/$(PROTO_DIR)
 
 # Check if output directories exist, if not create them
 .PHONY: create_dirs
@@ -41,34 +41,60 @@ cleanproto:
 # DEVELOPMENT
 # ==================================================================================== #
 	
-.PHONY: build
+# Variables
+DOCKER_COMPOSE=docker-compose
+GOOSE_CMD=docker-compose run --rm
+GOOSE_BIN=goose
+MIGRATION_DIR=migrations
+
+# Load environment variables from .env files
+include user-service/.env
+# include invoice-service/.env
+
+# Targets
+.PHONY: all build up down test migrate-user migrate-invoice stop restart
+
+# Build the services
 build:
-	@echo "Building services..."
-	docker-compose build
+	$(DOCKER_COMPOSE) build
 
-.PHONY: up
+# Start all services
 up:
-	@echo "Starting services..."
-	docker-compose up -d
+	$(DOCKER_COMPOSE) up -d
 
-.PHONY: down
+# Stop all services
 down:
-	@echo "Stopping services..."
-	docker-compose down
+	$(DOCKER_COMPOSE) down
 
-.PHONY: migrate
-migrate:
-	@echo "Applying migrations for invoice service..."
-	docker-compose run --rm invoiceservice golang-migrate -path /migrations -database "postgres://${INVOICE_DB_USER}:${INVOICE_DB_PASSWORD}@${INVOICE_DB_HOST}:${INVOICE_DB_PORT}/${INVOICE_DB_NAME}?sslmode=disable" up
-	@echo "Applying migrations for user service..."
-	docker-compose run --rm userservice golang-migrate -path /migrations -database "postgres://${USER_DB_USER}:${USER_DB_PASSWORD}@${USER_DB_HOST}:${USER_DB_PORT}/${USER_DB_NAME}?sslmode=disable" up
+# Stop and remove all containers
+stop:
+	$(DOCKER_COMPOSE) down --volumes --remove-orphans
 
-.PHONY: test
+# Restart services
+restart:
+	$(DOCKER_COMPOSE) down
+	$(DOCKER_COMPOSE) up -d
+
+# Apply Goose migrations for the user service
+migrate-user:
+	$(GOOSE_CMD) user-service $(GOOSE_BIN) -dir $(MIGRATION_DIR) postgres "$(DATABASE_URL)" up
+
+# Apply Goose migrations for the invoice service
+migrate-invoice:
+	$(GOOSE_CMD) invoice-service $(GOOSE_BIN) -dir $(MIGRATION_DIR) postgres "$(DATABASE_URL)" up
+
+# Apply migrations for all services
+migrate-all: migrate-user migrate-invoice
+
+# Show logs for all services
+logs:
+	$(DOCKER_COMPOSE) logs -f
+
+# Run tests for all services
 test:
 	@echo "Running tests for invoice service..."
-	cd invoiceservice && go test ./...
+	cd invoice-service && go test ./...
 
-.PHONY: clean
-clean:
-	@echo "Removing containers..."
-	docker-compose down -v
+	@echo "Running tests for user service..."
+	cd user-service && go test ./...
+
