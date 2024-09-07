@@ -48,7 +48,7 @@ GOOSE_BIN=goose
 MIGRATION_DIR=migrations
 
 # Load environment variables from .env files
-include user-service/.env
+# include user-service/.env
 # include invoice-service/.env
 
 # Targets
