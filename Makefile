@@ -1,9 +1,3 @@
-# Load environment variables from .env files
-ifneq ("$(wildcard user-service/.env)","")
-    include user-service/.env
-	export
-endif
-
 # ==================================================================================== #
 # PROTO
 # ==================================================================================== #
