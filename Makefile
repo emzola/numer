@@ -73,14 +73,14 @@ restart:
 
 # Apply Goose migrations for the user service
 migrate-user:
-	$(GOOSE_CMD) user-service $(GOOSE_BIN) -dir $(MIGRATION_DIR) postgres "$(DATABASE_URL)" up
+	$(GOOSE_CMD) user-service $(GOOSE_BIN) -dir $(MIGRATION_DIR) postgres "$(USER_DB_URL)" up
 
 # Apply Goose migrations for the invoice service
-migrate-invoice:
-	$(GOOSE_CMD) invoice-service $(GOOSE_BIN) -dir $(MIGRATION_DIR) postgres "$(DATABASE_URL)" up
+# migrate-invoice:
+# 	$(GOOSE_CMD) invoice-service $(GOOSE_BIN) -dir $(MIGRATION_DIR) postgres "$(DATABASE_URL)" up
 
 # Apply migrations for all services
-migrate-all: migrate-user migrate-invoice
+migrate-all: migrate-user
 
 # Show logs for all services
 logs:

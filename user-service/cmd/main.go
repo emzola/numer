@@ -36,7 +36,7 @@ func main() {
 	// Load configuration
 	var cfg config.Params
 	flag.StringVar(&cfg.GRPCServerAddress, "server-address", os.Getenv("GRPC_SERVER_ADDRESS"), "GRPC server address")
-	flag.StringVar(&cfg.DatabaseURL, "database-url", os.Getenv("DATABASE_URL"), "POSTGRESQL database URL")
+	flag.StringVar(&cfg.DatabaseURL, "database-url", os.Getenv("USER_DB_URL"), "POSTGRESQL database URL")
 
 	ctx, cancel := context.WithCancel(context.Background())
 

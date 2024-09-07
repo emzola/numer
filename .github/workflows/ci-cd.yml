@@ -13,7 +13,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
+    env:
+      USER_DB_URL: ${{ secrets.USER_DB_URL }}
+      
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -32,9 +35,9 @@ jobs:
       run: |
         make up
 
-    # - name: Apply migrations
-    #   run: |
-    #     make migrate
+    - name: Apply migrations
+      run: |
+        make migrate-all
 
     - name: Run tests
       run: |
