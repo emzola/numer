@@ -44,8 +44,12 @@ services:
   
   user-db:
     image: postgres:latest
-    env_file:
-      - ./user-service/.env
+    environment:
+      POSTGRES_USER: ${USER_DB_USER}
+      POSTGRES_PASSWORD: ${USER_DB_PASSWORD}
+      POSTGRES_DB: ${USER_DB_NAME}
+    ports:
+      - "5432:5432"
     volumes:
       - user-db-data:/var/lib/postgresql/data
 

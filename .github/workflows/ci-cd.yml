@@ -16,6 +16,9 @@ jobs:
 
     env:
       USER_DB_URL: ${{ secrets.USER_DB_URL }}
+      USER_DB_USER: ${{ secrets.USER_DB_USER }}
+      USER_DB_PASSWORD: ${{ secrets.USER_DB_PASSWORD }}
+      USER_DB_NAME: ${{ secrets.USER_DB_NAME }}
       
     steps:
     - name: Checkout code

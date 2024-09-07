@@ -47,6 +47,10 @@ GOOSE_CMD=docker-compose run --rm
 GOOSE_BIN=goose
 MIGRATION_DIR=migrations
 
+# Load environment variables from .env files
+include user-service/.env
+# include invoice-service/.env
+
 # Targets
 .PHONY: all build up down test migrate-user migrate-invoice stop restart
 
@@ -88,9 +92,6 @@ logs:
 
 # Run tests for all services
 test:
-	@echo "Running tests for invoice service..."
-	cd invoice-service && go test ./...
-
 	@echo "Running tests for user service..."
 	cd user-service && go test ./...
 

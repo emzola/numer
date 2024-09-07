@@ -50,4 +50,4 @@ COPY .env .env
 EXPOSE 50051
 
 # Command to run the migrations and start the application
-CMD ["/bin/sh", "-c", "/usr/local/bin/goose -dir ./db/migrations postgres \"$DATABASE_URL\" up && ./user-service"]
+CMD ["/bin/sh", "-c", "/usr/local/bin/goose -dir ./db/migrations postgres \"$USER_DB_URL\" up && ./user-service"]
