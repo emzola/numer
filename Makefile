@@ -1,3 +1,7 @@
+# Load environment variables from .env files
+include user-service/.env
+export $(shell sed 's/=.*//' user-service/.env)
+
 # ==================================================================================== #
 # PROTO
 # ==================================================================================== #
@@ -46,10 +50,6 @@ DOCKER_COMPOSE=docker-compose
 GOOSE_CMD=docker-compose run --rm
 GOOSE_BIN=goose
 MIGRATION_DIR=migrations
-
-# Load environment variables from .env files
-include user-service/.env
-# include invoice-service/.env
 
 # Targets
 .PHONY: all build up down test migrate-user migrate-invoice stop restart
