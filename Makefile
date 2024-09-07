@@ -1,6 +1,8 @@
 # Load environment variables from .env files
-include user-service/.env
-export $(shell sed 's/=.*//' user-service/.env)
+ifneq ("$(wildcard user-service/.env)","")
+    include user-service/.env
+	export
+endif
 
 # ==================================================================================== #
 # PROTO
