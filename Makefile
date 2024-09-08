@@ -4,17 +4,17 @@
 
 # Define the paths
 PROTO_DIR := proto
-INVOICE_PROTO := $(PROTO_DIR)/invoice.proto
 USER_PROTO := user-service/$(PROTO_DIR)/user.proto
+INVOICE_PROTO := invoice-service/$(PROTO_DIR)/invoice.proto
 
-INVOICE_OUT_DIR := invoiceservice/genproto
 USER_OUT_DIR := user-service/$(PROTO_DIR)
+INVOICE_OUT_DIR := invoice-service/$(PROTO_DIR)
 
 # Check if output directories exist, if not create them
 .PHONY: create_dirs
 create_dirs:
-	@mkdir -p $(INVOICE_OUT_DIR)
 	@mkdir -p $(USER_OUT_DIR)
+	@mkdir -p $(INVOICE_OUT_DIR)
 
 # Define the protoc command
 PROTOC := protoc
@@ -23,19 +23,19 @@ PROTOC_GEN_GRPC_GO := protoc-gen-go-grpc
 
 # Generate the protobuf files
 .PHONY: proto
-proto: create_dirs invoice_proto user_proto
-
-invoice_proto: $(INVOICE_PROTO)
-	$(PROTOC) --go_out=. --go-grpc_out=. $(INVOICE_PROTO)
+proto: create_dirs user_proto invoice_proto
 
 user_proto: $(USER_PROTO)
 	$(PROTOC) --go_out=. --go-grpc_out=. $(USER_PROTO)
+
+invoice_proto: $(INVOICE_PROTO)
+	$(PROTOC) --go_out=. --go-grpc_out=. $(INVOICE_PROTO)
 	
 # Clean the generated files
 .PHONY: cleanproto
 cleanproto:
-	rm -f $(INVOICE_OUT_DIR)/*.pb.go
 	rm -f $(USER_OUT_DIR)/*.pb.go
+	rm -f $(INVOICE_OUT_DIR)/*.pb.go
 
 # ==================================================================================== #
 # DEVELOPMENT
@@ -80,11 +80,11 @@ migrate-user:
 	$(GOOSE_CMD) user-service $(GOOSE_BIN) -dir $(MIGRATION_DIR) postgres "$(USER_DB_URL)" up
 
 # Apply Goose migrations for the invoice service
-# migrate-invoice:
-# 	$(GOOSE_CMD) invoice-service $(GOOSE_BIN) -dir $(MIGRATION_DIR) postgres "$(DATABASE_URL)" up
+migrate-invoice:
+	$(GOOSE_CMD) invoice-service $(GOOSE_BIN) -dir $(MIGRATION_DIR) postgres "$(INVOICE_DB_URL)" up
 
 # Apply migrations for all services
-migrate-all: migrate-user
+migrate-all: migrate-user migrate-invoice
 
 # Show logs for all services
 logs:
@@ -94,4 +94,7 @@ logs:
 test:
 	@echo "Running tests for user service..."
 	cd user-service && go test ./...
+
+	@echo "Running tests for invoice service..."
+	cd invoice-service && go test ./...
 

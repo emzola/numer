@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             v4.23.4
-// source: proto/invoice.proto
+// source: invoice-service/proto/invoice.proto
 
-package genproto
+package proto
 
 import (
 	context "context"
@@ -19,11 +19,11 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	InvoiceService_CreateInvoice_FullMethodName       = "/invoice.InvoiceService/CreateInvoice"
-	InvoiceService_GetInvoice_FullMethodName          = "/invoice.InvoiceService/GetInvoice"
-	InvoiceService_ListInvoices_FullMethodName        = "/invoice.InvoiceService/ListInvoices"
-	InvoiceService_UpdateInvoiceStatus_FullMethodName = "/invoice.InvoiceService/UpdateInvoiceStatus"
-	InvoiceService_CancelInvoice_FullMethodName       = "/invoice.InvoiceService/CancelInvoice"
+	InvoiceService_CreateInvoice_FullMethodName = "/invoice.InvoiceService/CreateInvoice"
+	InvoiceService_GetInvoice_FullMethodName    = "/invoice.InvoiceService/GetInvoice"
+	InvoiceService_UpdateInvoice_FullMethodName = "/invoice.InvoiceService/UpdateInvoice"
+	InvoiceService_ListInvoices_FullMethodName  = "/invoice.InvoiceService/ListInvoices"
+	InvoiceService_SendInvoice_FullMethodName   = "/invoice.InvoiceService/SendInvoice"
 )
 
 // InvoiceServiceClient is the client API for InvoiceService service.
@@ -32,9 +32,9 @@ const (
 type InvoiceServiceClient interface {
 	CreateInvoice(ctx context.Context, in *CreateInvoiceRequest, opts ...grpc.CallOption) (*CreateInvoiceResponse, error)
 	GetInvoice(ctx context.Context, in *GetInvoiceRequest, opts ...grpc.CallOption) (*GetInvoiceResponse, error)
+	UpdateInvoice(ctx context.Context, in *UpdateInvoiceRequest, opts ...grpc.CallOption) (*UpdateInvoiceResponse, error)
 	ListInvoices(ctx context.Context, in *ListInvoicesRequest, opts ...grpc.CallOption) (*ListInvoicesResponse, error)
-	UpdateInvoiceStatus(ctx context.Context, in *UpdateInvoiceStatusRequest, opts ...grpc.CallOption) (*UpdateInvoiceStatusResponse, error)
-	CancelInvoice(ctx context.Context, in *CancelInvoiceRequest, opts ...grpc.CallOption) (*CancelInvoiceResponse, error)
+	SendInvoice(ctx context.Context, in *SendInvoiceRequest, opts ...grpc.CallOption) (*SendInvoiceResponse, error)
 }
 
 type invoiceServiceClient struct {
@@ -63,6 +63,15 @@ func (c *invoiceServiceClient) GetInvoice(ctx context.Context, in *GetInvoiceReq
 	return out, nil
 }
 
+func (c *invoiceServiceClient) UpdateInvoice(ctx context.Context, in *UpdateInvoiceRequest, opts ...grpc.CallOption) (*UpdateInvoiceResponse, error) {
+	out := new(UpdateInvoiceResponse)
+	err := c.cc.Invoke(ctx, InvoiceService_UpdateInvoice_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *invoiceServiceClient) ListInvoices(ctx context.Context, in *ListInvoicesRequest, opts ...grpc.CallOption) (*ListInvoicesResponse, error) {
 	out := new(ListInvoicesResponse)
 	err := c.cc.Invoke(ctx, InvoiceService_ListInvoices_FullMethodName, in, out, opts...)
@@ -72,18 +81,9 @@ func (c *invoiceServiceClient) ListInvoices(ctx context.Context, in *ListInvoice
 	return out, nil
 }
 
-func (c *invoiceServiceClient) UpdateInvoiceStatus(ctx context.Context, in *UpdateInvoiceStatusRequest, opts ...grpc.CallOption) (*UpdateInvoiceStatusResponse, error) {
-	out := new(UpdateInvoiceStatusResponse)
-	err := c.cc.Invoke(ctx, InvoiceService_UpdateInvoiceStatus_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *invoiceServiceClient) CancelInvoice(ctx context.Context, in *CancelInvoiceRequest, opts ...grpc.CallOption) (*CancelInvoiceResponse, error) {
-	out := new(CancelInvoiceResponse)
-	err := c.cc.Invoke(ctx, InvoiceService_CancelInvoice_FullMethodName, in, out, opts...)
+func (c *invoiceServiceClient) SendInvoice(ctx context.Context, in *SendInvoiceRequest, opts ...grpc.CallOption) (*SendInvoiceResponse, error) {
+	out := new(SendInvoiceResponse)
+	err := c.cc.Invoke(ctx, InvoiceService_SendInvoice_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -96,9 +96,9 @@ func (c *invoiceServiceClient) CancelInvoice(ctx context.Context, in *CancelInvo
 type InvoiceServiceServer interface {
 	CreateInvoice(context.Context, *CreateInvoiceRequest) (*CreateInvoiceResponse, error)
 	GetInvoice(context.Context, *GetInvoiceRequest) (*GetInvoiceResponse, error)
+	UpdateInvoice(context.Context, *UpdateInvoiceRequest) (*UpdateInvoiceResponse, error)
 	ListInvoices(context.Context, *ListInvoicesRequest) (*ListInvoicesResponse, error)
-	UpdateInvoiceStatus(context.Context, *UpdateInvoiceStatusRequest) (*UpdateInvoiceStatusResponse, error)
-	CancelInvoice(context.Context, *CancelInvoiceRequest) (*CancelInvoiceResponse, error)
+	SendInvoice(context.Context, *SendInvoiceRequest) (*SendInvoiceResponse, error)
 	mustEmbedUnimplementedInvoiceServiceServer()
 }
 
@@ -112,14 +112,14 @@ func (UnimplementedInvoiceServiceServer) CreateInvoice(context.Context, *CreateI
 func (UnimplementedInvoiceServiceServer) GetInvoice(context.Context, *GetInvoiceRequest) (*GetInvoiceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetInvoice not implemented")
 }
+func (UnimplementedInvoiceServiceServer) UpdateInvoice(context.Context, *UpdateInvoiceRequest) (*UpdateInvoiceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateInvoice not implemented")
+}
 func (UnimplementedInvoiceServiceServer) ListInvoices(context.Context, *ListInvoicesRequest) (*ListInvoicesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListInvoices not implemented")
 }
-func (UnimplementedInvoiceServiceServer) UpdateInvoiceStatus(context.Context, *UpdateInvoiceStatusRequest) (*UpdateInvoiceStatusResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateInvoiceStatus not implemented")
-}
-func (UnimplementedInvoiceServiceServer) CancelInvoice(context.Context, *CancelInvoiceRequest) (*CancelInvoiceResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CancelInvoice not implemented")
+func (UnimplementedInvoiceServiceServer) SendInvoice(context.Context, *SendInvoiceRequest) (*SendInvoiceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendInvoice not implemented")
 }
 func (UnimplementedInvoiceServiceServer) mustEmbedUnimplementedInvoiceServiceServer() {}
 
@@ -170,6 +170,24 @@ func _InvoiceService_GetInvoice_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _InvoiceService_UpdateInvoice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateInvoiceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InvoiceServiceServer).UpdateInvoice(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InvoiceService_UpdateInvoice_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InvoiceServiceServer).UpdateInvoice(ctx, req.(*UpdateInvoiceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _InvoiceService_ListInvoices_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListInvoicesRequest)
 	if err := dec(in); err != nil {
@@ -188,38 +206,20 @@ func _InvoiceService_ListInvoices_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _InvoiceService_UpdateInvoiceStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateInvoiceStatusRequest)
+func _InvoiceService_SendInvoice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendInvoiceRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(InvoiceServiceServer).UpdateInvoiceStatus(ctx, in)
+		return srv.(InvoiceServiceServer).SendInvoice(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: InvoiceService_UpdateInvoiceStatus_FullMethodName,
+		FullMethod: InvoiceService_SendInvoice_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(InvoiceServiceServer).UpdateInvoiceStatus(ctx, req.(*UpdateInvoiceStatusRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _InvoiceService_CancelInvoice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CancelInvoiceRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(InvoiceServiceServer).CancelInvoice(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: InvoiceService_CancelInvoice_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(InvoiceServiceServer).CancelInvoice(ctx, req.(*CancelInvoiceRequest))
+		return srv.(InvoiceServiceServer).SendInvoice(ctx, req.(*SendInvoiceRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -240,18 +240,18 @@ var InvoiceService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _InvoiceService_GetInvoice_Handler,
 		},
 		{
+			MethodName: "UpdateInvoice",
+			Handler:    _InvoiceService_UpdateInvoice_Handler,
+		},
+		{
 			MethodName: "ListInvoices",
 			Handler:    _InvoiceService_ListInvoices_Handler,
 		},
 		{
-			MethodName: "UpdateInvoiceStatus",
-			Handler:    _InvoiceService_UpdateInvoiceStatus_Handler,
-		},
-		{
-			MethodName: "CancelInvoice",
-			Handler:    _InvoiceService_CancelInvoice_Handler,
+			MethodName: "SendInvoice",
+			Handler:    _InvoiceService_SendInvoice_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/invoice.proto",
+	Metadata: "invoice-service/proto/invoice.proto",
 }

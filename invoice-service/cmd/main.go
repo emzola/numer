@@ -2,28 +2,27 @@ package main
 
 import (
 	"context"
+	"database/sql"
+	"flag"
 	"fmt"
 	"log/slog"
 	"net"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"sync"
 	"syscall"
 	"time"
 
-	"database/sql"
-
-	invoicepb "github.com/emzola/numer/invoiceservice/genproto"
+	"github.com/emzola/numer/invoiceservice/config"
 	"github.com/emzola/numer/invoiceservice/internal/handler"
 	"github.com/emzola/numer/invoiceservice/internal/repository"
 	"github.com/emzola/numer/invoiceservice/internal/service"
 	"github.com/emzola/numer/invoiceservice/pkg/discovery"
 	consul "github.com/emzola/numer/invoiceservice/pkg/discovery/consul"
+	pb "github.com/emzola/numer/invoiceservice/proto"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-	"gopkg.in/yaml.v3"
 )
 
 const serviceName = "invoiceservice"
@@ -34,29 +33,21 @@ func main() {
 	logger := slog.New(logHandler)
 	slog.SetDefault(logger)
 
-	// Open and parse yaml configuration file
-	configFilePath := filepath.Join("invoiceservice", "configs", "base.yaml")
-	f, err := os.Open(configFilePath)
-	if err != nil {
-		logger.Error("failed to open configuration file", slog.Any("error", err))
-	}
-	defer f.Close()
-	var cfg config
-	if err := yaml.NewDecoder(f).Decode(&cfg); err != nil {
-		logger.Error("failed to parse configuration", slog.Any("error", err))
-	}
-	port := cfg.API.Port
+	// Load configuration
+	var cfg config.Params
+	flag.StringVar(&cfg.GRPCServerAddress, "server-address", os.Getenv("GRPC_SERVER_ADDRESS"), "GRPC server address")
+	flag.StringVar(&cfg.DatabaseURL, "database-url", os.Getenv("INVOICE_DB_URL"), "POSTGRESQL database URL")
 
 	ctx, cancel := context.WithCancel(context.Background())
 
 	// Service discovery
-	registry, err := consul.NewRegistry("localhost:8500")
+	registry, err := consul.NewRegistry("consul:8500")
 	if err != nil {
-		panic(err)
+		logger.Error("failed to create new consul-based service registry instance", slog.Any("error", err))
 	}
 	instanceID := discovery.GenerateInstanceID(serviceName)
-	if err := registry.Register(ctx, instanceID, serviceName, fmt.Sprintf("localhost:%d", port)); err != nil {
-		panic(err)
+	if err := registry.Register(ctx, instanceID, serviceName, fmt.Sprintf("invoice-service%v", cfg.GRPCServerAddress)); err != nil {
+		logger.Error("failed to create a service record in the registry", slog.Any("error", err))
 	}
 	go func() {
 		for {
@@ -68,25 +59,24 @@ func main() {
 	}()
 	defer registry.Deregister(ctx, instanceID, serviceName)
 
-	// Establish database connection
-	connStr := "postgres://" + os.Getenv("INVOICE_DB_USER") + ":" + os.Getenv("INVOICE_DB_PASSWORD") + "@" + os.Getenv("INVOICE_DB_HOST") + os.Getenv("INVOICE_DB_PORT") + "/" + os.Getenv("INVOICE_DB_NAME") + "?sslmode=disable"
-	db, err := sql.Open("pgx", connStr)
+	// Connect to PostgreSQL database
+	dbpool, err := sql.Open("pgx", cfg.DatabaseURL)
 	if err != nil {
-		panic("failed to connect to database")
+		logger.Error("failed to connect to the database", slog.Any("error", err))
 	}
-	defer db.Close()
+	defer dbpool.Close()
 	logger.Info("database connection established")
 
 	// Initialize repository, service and server
-	repo := repository.NewInvoiceRepository(db)
+	repo := repository.NewInvoiceRepository(dbpool)
 	svc := service.NewInvoiceService(repo)
-	server := handler.NewInvoiceServiceServer(svc)
+	handler := handler.NewInvoiceHandler(svc)
 
 	grpcServer := grpc.NewServer()
 	reflection.Register(grpcServer)
-	invoicepb.RegisterInvoiceServiceServer(grpcServer, server)
+	pb.RegisterInvoiceServiceServer(grpcServer, handler)
 
-	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%v", port))
+	lis, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0%v", cfg.GRPCServerAddress))
 	if err != nil {
 		logger.Error("failed to listen", slog.Any("error", err))
 	}
@@ -105,7 +95,7 @@ func main() {
 		logger.Info("server stopped")
 	}()
 
-	logger.Info("invoice service running", slog.Int("port", port))
+	logger.Info("invoice service running", slog.String("port", cfg.GRPCServerAddress))
 	if err := grpcServer.Serve(lis); err != nil {
 		panic(err)
 	}

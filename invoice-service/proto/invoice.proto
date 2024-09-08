@@ -1,0 +1,106 @@
+syntax = "proto3";
+option go_package = "/invoice-service/proto";
+package invoice;
+
+import "google/protobuf/timestamp.proto";
+
+service InvoiceService {
+    rpc CreateInvoice(CreateInvoiceRequest) returns (CreateInvoiceResponse);
+    rpc GetInvoice(GetInvoiceRequest) returns (GetInvoiceResponse);
+    rpc UpdateInvoice(UpdateInvoiceRequest) returns (UpdateInvoiceResponse);
+    rpc ListInvoices(ListInvoicesRequest) returns (ListInvoicesResponse);
+    rpc SendInvoice(SendInvoiceRequest) returns (SendInvoiceResponse);
+}
+
+message CreateInvoiceRequest {
+    int64 user_id = 1;
+    int64 customer_id = 2;
+    google.protobuf.Timestamp issue_date = 3;
+    google.protobuf.Timestamp due_date = 4;
+    string currency = 5;
+    repeated InvoiceItem items = 6;
+    int64 discount_percentage = 7;
+    string account_name = 8;
+    string account_number = 9;
+    string bank_name = 10;
+    string routing_number = 11;
+    string note = 12;
+}
+
+message CreateInvoiceResponse {
+    int64 invoice_id = 1;
+}
+
+message GetInvoiceRequest {
+    int64 invoice_id = 1;
+}
+
+message GetInvoiceResponse {
+    Invoice invoice = 1;
+}
+
+message UpdateInvoiceRequest {
+    int64 invoice_id = 1;
+    string status = 2;
+    google.protobuf.Timestamp issue_date = 3;
+    google.protobuf.Timestamp due_date = 4;
+    string currency = 5;
+    repeated InvoiceItem items = 6;
+    int64 discount_percentage = 7;
+    string account_name = 8;
+    string account_number = 9;
+    string bank_name = 10;
+    string routing_number = 11;
+    string note = 12;
+}
+
+message UpdateInvoiceResponse {
+    Invoice invoice = 1;
+}
+
+message Invoice {
+    int64 id = 1;
+    int64 user_id = 2;
+    int64 customer_id = 3;
+    string invoice_number = 4;
+    string status = 5;
+    google.protobuf.Timestamp issue_date = 6;
+    google.protobuf.Timestamp due_date = 7;
+    string currency = 8;
+    repeated InvoiceItem items = 9;
+    int64 discount_percentage = 10; // Represented as hundredths of a percent (e.g., 1000 = 10%)
+    int64 subtotal = 11;            // Represented in cents
+    int64 discount_amount = 12;     // Represented in cents
+    int64 total = 13;               // Represented in cents
+    string account_name = 14;
+    string account_number = 15;
+    string bank_name = 16;
+    string routing_number = 17;
+    string note = 18;
+}
+
+message ListInvoicesRequest {
+    int64 user_id = 1;
+    int32 page_size = 2; 
+    string page_token = 3;
+}
+
+message ListInvoicesResponse {
+    repeated Invoice invoices = 1;
+    string next_page_token = 2;
+}
+
+message InvoiceItem {
+    int64 id = 1;
+    string description = 2;
+    int32 quantity = 3;
+    int64 unit_price = 4; // Represented in cents
+}
+
+message SendInvoiceRequest {
+    int64 invoice_id = 1;
+}
+
+message SendInvoiceResponse {
+    bool success = 1;
+}
