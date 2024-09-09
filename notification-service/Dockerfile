@@ -20,7 +20,7 @@ RUN go mod download
 COPY . .
 
 # Build the Go application
-RUN go build -o stats-service ./cmd/main.go
+RUN go build -o notification-service ./cmd/main.go
 
 # Second stage: build a minimal image
 FROM alpine:latest
@@ -29,13 +29,13 @@ FROM alpine:latest
 WORKDIR /app
 
 # Copy the binary from the builder stage
-COPY --from=builder /app/stats-service .
+COPY --from=builder /app/notification-service .
 
 # Copy the .env file (if necessary)
 COPY .env .env
 
 # Expose the gRPC port
-EXPOSE 50053
+EXPOSE 50054
 
 # Command to start the application
-CMD ["./stats-service"]
+CMD ["./notification-service"]

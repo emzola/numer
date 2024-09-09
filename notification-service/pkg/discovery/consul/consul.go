@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/emzola/numer/stats-service/pkg/discovery"
+	"github.com/emzola/numer/notification-service/pkg/discovery"
 	consul "github.com/hashicorp/consul/api"
 )
 

@@ -45,6 +45,17 @@ services:
       - invoice-service
       - consul
 
+  notification-service:
+    build:
+      context: ./notification-service
+      dockerfile: Dockerfile
+    env_file:
+      - ./notification-service/.env
+    ports:
+      - "50054:50054"
+    depends_on:
+      - consul
+
   user-db:
     image: postgres:latest
     env_file:

@@ -1,0 +1,17 @@
+syntax = "proto3";
+option go_package = "/notification-service/proto";
+package notification;
+
+service NotificationService {
+  rpc SendNotification(SendNotificationRequest) returns (SendNotificationResponse) {}
+}
+
+message SendNotificationRequest {
+  string email = 1;
+  string message = 2;
+  string subject = 3;
+}
+
+message SendNotificationResponse {
+  string status = 1;
+}

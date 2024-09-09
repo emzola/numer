@@ -7,10 +7,12 @@ PROTO_DIR := proto
 USER_PROTO := user-service/$(PROTO_DIR)/user.proto
 INVOICE_PROTO := invoice-service/$(PROTO_DIR)/invoice.proto
 STATS_PROTO := stats-service/$(PROTO_DIR)/stats.proto
+NOTIFICATION_PROTO := notification-service/$(PROTO_DIR)/notification.proto
 
 USER_OUT_DIR := user-service/$(PROTO_DIR)
 INVOICE_OUT_DIR := invoice-service/$(PROTO_DIR)
 STATS_OUT_DIR := stats-service/$(PROTO_DIR)
+NOTIFICATION_OUT_DIR := notification-service/$(PROTO_DIR)
 
 # Check if output directories exist, if not create them
 .PHONY: create_dirs
@@ -18,6 +20,7 @@ create_dirs:
 	@mkdir -p $(USER_OUT_DIR)
 	@mkdir -p $(INVOICE_OUT_DIR)
 	@mkdir -p $(STATS_OUT_DIR)
+	@mkdir -p $(NOTIFICATION_OUT_DIR)
 
 # Define the protoc command
 PROTOC := protoc
@@ -26,7 +29,7 @@ PROTOC_GEN_GRPC_GO := protoc-gen-go-grpc
 
 # Generate the protobuf files
 .PHONY: proto
-proto: create_dirs user_proto invoice_proto stats_proto
+proto: create_dirs user_proto invoice_proto stats_proto notification_proto
 
 user_proto: $(USER_PROTO)
 	$(PROTOC) --go_out=. --go-grpc_out=. $(USER_PROTO)
@@ -36,6 +39,9 @@ invoice_proto: $(INVOICE_PROTO)
 
 stats_proto: $(STATS_PROTO)
 	$(PROTOC) --go_out=. --go-grpc_out=. $(STATS_PROTO)
+
+notification_proto: $(NOTIFICATION_PROTO)
+	$(PROTOC) --go_out=. --go-grpc_out=. $(NOTIFICATION_PROTO)
 	
 # Clean the generated files
 .PHONY: cleanproto
@@ -43,6 +49,7 @@ cleanproto:
 	rm -f $(USER_OUT_DIR)/*.pb.go
 	rm -f $(INVOICE_OUT_DIR)/*.pb.go
 	rm -f $(STATS_OUT_DIR)/*.pb.go
+	rm -f $(NOTIFICATION_OUT_DIR)/*.pb.go
 
 # ==================================================================================== #
 # DEVELOPMENT
@@ -53,10 +60,6 @@ DOCKER_COMPOSE=docker-compose
 GOOSE_CMD=docker-compose run --rm
 GOOSE_BIN=goose
 MIGRATION_DIR=migrations
-
-# Load environment variables from .env files
-# include user-service/.env
-# include invoice-service/.env
 
 # Targets
 .PHONY: all build up down test migrate-user migrate-invoice stop restart
@@ -107,4 +110,7 @@ test:
 
 	@echo "Running tests for stats service..."
 	cd stats-service && go test ./...
+
+	@echo "Running tests for notification service..."
+	cd notification-service && go test ./...
 
