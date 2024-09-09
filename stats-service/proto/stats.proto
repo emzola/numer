@@ -1,0 +1,22 @@
+syntax = "proto3";
+option go_package = "/stats-service/proto";
+package stats;
+
+service StatsService {
+  rpc GetStats (GetStatsRequest) returns (GetStatsResponse);
+}
+
+message GetStatsRequest {}
+
+message GetStatsResponse {
+  int64 total_invoices = 1;
+  int64 total_paid_invoices = 2;
+  int64 total_overdue_invoices = 3;
+  int64 total_draft_invoices = 4;
+  int64 total_unpaid_invoices = 5;
+  
+  int64 total_amount_paid = 6;      
+  int64 total_amount_overdue = 7;  
+  int64 total_amount_draft = 8;    
+  int64 total_amount_unpaid = 9;
+}
