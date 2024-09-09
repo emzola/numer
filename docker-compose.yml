@@ -21,15 +21,6 @@ services:
       - user-db
       - consul
   
-  user-db:
-    image: postgres:latest
-    env_file:
-      - ./user-service/.env
-    ports:
-      - "5433:5432"
-    volumes:
-      - user-db-data:/var/lib/postgresql/data
-
   invoice-service:
     build:
       context: ./invoice-service
@@ -42,6 +33,27 @@ services:
       - invoice-db
       - consul
       
+  stats-service:
+    build:
+      context: ./stats-service
+      dockerfile: Dockerfile
+    env_file:
+      - ./stats-service/.env
+    ports:
+      - "50053:50053"
+    depends_on:
+      - invoice-service
+      - consul
+
+  user-db:
+    image: postgres:latest
+    env_file:
+      - ./user-service/.env
+    ports:
+      - "5433:5432"
+    volumes:
+      - user-db-data:/var/lib/postgresql/data
+      
   invoice-db:
     image: postgres:latest
     env_file:
@@ -50,17 +62,6 @@ services:
       - "5434:5432"
     volumes:
       - invoice-db-data:/var/lib/postgresql/data
-
-  # stats-service:
-  #   build:
-  #     context: ./stats-service
-  #     dockerfile: Dockerfile
-  #   env_file:
-  #     - ./stats-service/.env
-  #   ports:
-  #     - "50053:50053"
-  #   depends_on:
-  #     - consul
 
 volumes:
   user-db-data:
