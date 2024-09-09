@@ -6,7 +6,7 @@ import (
 	"encoding/base64"
 	"strconv"
 
-	"github.com/emzola/numer/invoiceservice/internal/models"
+	"github.com/emzola/numer/invoice-service/internal/models"
 )
 
 type InvoiceRepository struct {

@@ -1,4 +1,4 @@
-module github.com/emzola/numer/invoiceservice
+module github.com/emzola/numer/invoice-service
 
 go 1.22.0
 

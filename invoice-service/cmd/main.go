@@ -13,19 +13,19 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/emzola/numer/invoiceservice/config"
-	"github.com/emzola/numer/invoiceservice/internal/handler"
-	"github.com/emzola/numer/invoiceservice/internal/repository"
-	"github.com/emzola/numer/invoiceservice/internal/service"
-	"github.com/emzola/numer/invoiceservice/pkg/discovery"
-	consul "github.com/emzola/numer/invoiceservice/pkg/discovery/consul"
-	pb "github.com/emzola/numer/invoiceservice/proto"
+	"github.com/emzola/numer/invoice-service/config"
+	"github.com/emzola/numer/invoice-service/internal/handler"
+	"github.com/emzola/numer/invoice-service/internal/repository"
+	"github.com/emzola/numer/invoice-service/internal/service"
+	"github.com/emzola/numer/invoice-service/pkg/discovery"
+	consul "github.com/emzola/numer/invoice-service/pkg/discovery/consul"
+	pb "github.com/emzola/numer/invoice-service/proto"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
 
-const serviceName = "invoiceservice"
+const serviceName = "invoice-service"
 
 func main() {
 	// Initialize logger

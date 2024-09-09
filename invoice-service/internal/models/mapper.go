@@ -1,7 +1,7 @@
 package models
 
 import (
-	pb "github.com/emzola/numer/invoiceservice/proto"
+	pb "github.com/emzola/numer/invoice-service/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 

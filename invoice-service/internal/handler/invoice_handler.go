@@ -3,9 +3,9 @@ package handler
 import (
 	"context"
 
-	"github.com/emzola/numer/invoiceservice/internal/models"
-	"github.com/emzola/numer/invoiceservice/internal/service"
-	pb "github.com/emzola/numer/invoiceservice/proto"
+	"github.com/emzola/numer/invoice-service/internal/models"
+	"github.com/emzola/numer/invoice-service/internal/service"
+	pb "github.com/emzola/numer/invoice-service/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

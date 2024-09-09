@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/emzola/numer/invoiceservice/internal/models"
+	"github.com/emzola/numer/invoice-service/internal/models"
 	"github.com/shopspring/decimal"
 )
 
