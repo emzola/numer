@@ -6,15 +6,18 @@
 PROTO_DIR := proto
 USER_PROTO := user-service/$(PROTO_DIR)/user.proto
 INVOICE_PROTO := invoice-service/$(PROTO_DIR)/invoice.proto
+STATS_PROTO := stats-service/$(PROTO_DIR)/stats.proto
 
 USER_OUT_DIR := user-service/$(PROTO_DIR)
 INVOICE_OUT_DIR := invoice-service/$(PROTO_DIR)
+STATS_OUT_DIR := stats-service/$(PROTO_DIR)
 
 # Check if output directories exist, if not create them
 .PHONY: create_dirs
 create_dirs:
 	@mkdir -p $(USER_OUT_DIR)
 	@mkdir -p $(INVOICE_OUT_DIR)
+	@mkdir -p $(STATS_OUT_DIR)
 
 # Define the protoc command
 PROTOC := protoc
@@ -23,19 +26,23 @@ PROTOC_GEN_GRPC_GO := protoc-gen-go-grpc
 
 # Generate the protobuf files
 .PHONY: proto
-proto: create_dirs user_proto invoice_proto
+proto: create_dirs user_proto invoice_proto stats_proto
 
 user_proto: $(USER_PROTO)
 	$(PROTOC) --go_out=. --go-grpc_out=. $(USER_PROTO)
 
 invoice_proto: $(INVOICE_PROTO)
 	$(PROTOC) --go_out=. --go-grpc_out=. $(INVOICE_PROTO)
+
+stats_proto: $(STATS_PROTO)
+	$(PROTOC) --go_out=. --go-grpc_out=. $(STATS_PROTO)
 	
 # Clean the generated files
 .PHONY: cleanproto
 cleanproto:
 	rm -f $(USER_OUT_DIR)/*.pb.go
 	rm -f $(INVOICE_OUT_DIR)/*.pb.go
+	rm -f $(STATS_OUT_DIR)/*.pb.go
 
 # ==================================================================================== #
 # DEVELOPMENT
@@ -97,4 +104,7 @@ test:
 
 	@echo "Running tests for invoice service..."
 	cd invoice-service && go test ./...
+
+	@echo "Running tests for stats service..."
+	cd stats-service && go test ./...
 

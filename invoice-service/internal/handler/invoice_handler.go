@@ -2,7 +2,6 @@ package handler
 
 import (
 	"context"
-	"time"
 
 	"github.com/emzola/numer/invoiceservice/internal/models"
 	"github.com/emzola/numer/invoiceservice/internal/service"
@@ -44,20 +43,15 @@ func (h *InvoiceHandler) CreateInvoice(ctx context.Context, req *pb.CreateInvoic
 		})
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	invoice, err := h.service.CreateInvoice(ctx, invoice)
 	if err != nil {
-		return nil, status.Error(codes.Internal, "failed to create invoice")
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &pb.CreateInvoiceResponse{InvoiceId: invoice.ID}, nil
 }
 
 func (h *InvoiceHandler) GetInvoice(ctx context.Context, req *pb.GetInvoiceRequest) (*pb.GetInvoiceResponse, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
 	invoice, err := h.service.GetInvoice(ctx, req.InvoiceId)
 	if err != nil {
 		return nil, status.Error(codes.NotFound, "invoice not found")
@@ -96,19 +90,19 @@ func (h *InvoiceHandler) UpdateInvoice(ctx context.Context, req *pb.UpdateInvoic
 	// Call service to update invoice
 	err = h.service.UpdateInvoice(ctx, invoice)
 	if err != nil {
-		return nil, status.Error(codes.Internal, "failed to update invoice")
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &pb.UpdateInvoiceResponse{Invoice: models.ConvertInvoiceToProto(invoice)}, nil
+	return &pb.UpdateInvoiceResponse{
+		InvoiceId: invoice.ID,
+		Message:   "invoice successfully updated",
+	}, nil
 }
 
 func (s *InvoiceHandler) ListInvoices(ctx context.Context, req *pb.ListInvoicesRequest) (*pb.ListInvoicesResponse, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	invoices, nextPageToken, err := s.service.ListInvoicesByUserID(ctx, req.UserId, int(req.PageSize), req.PageToken)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to list invoices")
+		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
 	protoInvoices := make([]*pb.Invoice, len(invoices))
