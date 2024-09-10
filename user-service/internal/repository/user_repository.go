@@ -18,13 +18,13 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 }
 
 // User management
-func (r *UserRepository) CreateUser(ctx context.Context, email, password, role string) (models.User, error) {
+func (r *UserRepository) CreateUser(ctx context.Context, email, password, role string) (*models.User, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return models.User{}, err
+		return &models.User{}, err
 	}
 
-	user := models.User{
+	user := &models.User{
 		Email:          email,
 		HashedPassword: string(hashedPassword),
 		Role:           role,
@@ -38,18 +38,18 @@ func (r *UserRepository) CreateUser(ctx context.Context, email, password, role s
 	return user, err
 }
 
-func (r *UserRepository) GetUserByID(ctx context.Context, userID int64) (models.User, error) {
+func (r *UserRepository) GetUserByID(ctx context.Context, userID int64) (*models.User, error) {
 	var user models.User
 	err := r.db.QueryRowContext(ctx,
 		"SELECT id, email, hashed_password, role, created_at, updated_at FROM users WHERE id = $1",
 		userID).Scan(&user.ID, &user.Email, &user.HashedPassword, &user.Role, &user.CreatedAt, &user.UpdatedAt)
 	if err == sql.ErrNoRows {
-		return models.User{}, errors.New("user not found")
+		return &models.User{}, errors.New("user not found")
 	}
-	return user, err
+	return &user, err
 }
 
-func (r *UserRepository) UpdateUser(ctx context.Context, user models.User) error {
+func (r *UserRepository) UpdateUser(ctx context.Context, user *models.User) error {
 	_, err := r.db.ExecContext(ctx,
 		"UPDATE users SET email = $1, hashed_password = $2, role = $3, updated_at = NOW() WHERE id = $4",
 		user.Email, user.HashedPassword, user.Role, user.ID)
@@ -62,7 +62,7 @@ func (r *UserRepository) DeleteUser(ctx context.Context, userID int64) error {
 }
 
 // Customer management
-func (r *UserRepository) CreateCustomer(ctx context.Context, customer models.Customer) (models.Customer, error) {
+func (r *UserRepository) CreateCustomer(ctx context.Context, customer *models.Customer) (*models.Customer, error) {
 	err := r.db.QueryRowContext(ctx,
 		"INSERT INTO customers (user_id, name, email, address) VALUES ($1, $2, $3, $4) RETURNING id, created_at, updated_at",
 		customer.UserID, customer.Name, customer.Email, customer.Address).
@@ -71,18 +71,18 @@ func (r *UserRepository) CreateCustomer(ctx context.Context, customer models.Cus
 	return customer, err
 }
 
-func (r *UserRepository) GetCustomerByID(ctx context.Context, customerID int64) (models.Customer, error) {
+func (r *UserRepository) GetCustomerByID(ctx context.Context, customerID int64) (*models.Customer, error) {
 	var customer models.Customer
 	err := r.db.QueryRowContext(ctx,
 		"SELECT id, user_id, name, email, address, created_at, updated_at FROM customers WHERE id = $1",
 		customerID).Scan(&customer.ID, &customer.UserID, &customer.Name, &customer.Email, &customer.Address, &customer.CreatedAt, &customer.UpdatedAt)
 	if err == sql.ErrNoRows {
-		return models.Customer{}, errors.New("customer not found")
+		return &models.Customer{}, errors.New("customer not found")
 	}
-	return customer, err
+	return &customer, err
 }
 
-func (r *UserRepository) UpdateCustomer(ctx context.Context, customer models.Customer) error {
+func (r *UserRepository) UpdateCustomer(ctx context.Context, customer *models.Customer) error {
 	_, err := r.db.ExecContext(ctx,
 		"UPDATE customers SET name = $1, email = $2, address = $3, updated_at = NOW() WHERE id = $4",
 		customer.Name, customer.Email, customer.Address, customer.ID)
