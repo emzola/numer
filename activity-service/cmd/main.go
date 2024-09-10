@@ -13,19 +13,19 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/emzola/numer/user-service/config"
-	"github.com/emzola/numer/user-service/internal/handler"
-	"github.com/emzola/numer/user-service/internal/repository"
-	"github.com/emzola/numer/user-service/internal/service"
-	"github.com/emzola/numer/user-service/pkg/discovery"
-	consul "github.com/emzola/numer/user-service/pkg/discovery/consul"
-	pb "github.com/emzola/numer/user-service/proto"
+	"github.com/emzola/numer/activity-service/config"
+	"github.com/emzola/numer/activity-service/internal/handler"
+	"github.com/emzola/numer/activity-service/internal/repository"
+	"github.com/emzola/numer/activity-service/internal/service"
+	"github.com/emzola/numer/activity-service/pkg/discovery"
+	consul "github.com/emzola/numer/activity-service/pkg/discovery/consul"
+	pb "github.com/emzola/numer/activity-service/proto"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
 
-const serviceName = "user-service"
+const serviceName = "activity-service"
 
 func main() {
 	// Initialize logger
@@ -36,18 +36,18 @@ func main() {
 	// Load configuration
 	var cfg config.Params
 	flag.StringVar(&cfg.GRPCServerAddress, "server-address", os.Getenv("GRPC_SERVER_ADDRESS"), "GRPC server address")
-	flag.StringVar(&cfg.DatabaseURL, "database-url", os.Getenv("USER_DB_URL"), "POSTGRESQL database URL")
+	flag.StringVar(&cfg.DatabaseURL, "database-url", os.Getenv("ACTIVITY_DB_URL"), "POSTGRESQL database URL")
 
 	ctx, cancel := context.WithCancel(context.Background())
 
 	// Service discovery
 	registry, err := consul.NewRegistry("consul:8500")
 	if err != nil {
-		panic(err)
+		logger.Error("failed to create new consul-based service registry instance", slog.Any("error", err))
 	}
 	instanceID := discovery.GenerateInstanceID(serviceName)
-	if err := registry.Register(ctx, instanceID, serviceName, fmt.Sprintf("localhost%v", cfg.GRPCServerAddress)); err != nil {
-		panic(err)
+	if err := registry.Register(ctx, instanceID, serviceName, fmt.Sprintf("0.0.0.0%v", cfg.GRPCServerAddress)); err != nil {
+		logger.Error("failed to create a service record in the registry", slog.Any("error", err))
 	}
 	go func() {
 		for {
@@ -68,13 +68,13 @@ func main() {
 	logger.Info("database connection established")
 
 	// Initialize repository, service and server
-	repo := repository.NewUserRepository(dbpool)
-	svc := service.NewUserService(repo)
-	server := handler.NewUserHandler(svc)
+	repo := repository.NewActivityRepository(dbpool)
+	svc := service.NewActivityService(repo)
+	handler := handler.NewActivityHandler(svc)
 
 	grpcServer := grpc.NewServer()
 	reflection.Register(grpcServer)
-	pb.RegisterUserServiceServer(grpcServer, server)
+	pb.RegisterActivityServiceServer(grpcServer, handler)
 
 	lis, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0%v", cfg.GRPCServerAddress))
 	if err != nil {
@@ -95,7 +95,7 @@ func main() {
 		logger.Info("server stopped")
 	}()
 
-	logger.Info("user service running", slog.String("port", cfg.GRPCServerAddress))
+	logger.Info("activity service running", slog.String("port", cfg.GRPCServerAddress))
 	if err := grpcServer.Serve(lis); err != nil {
 		panic(err)
 	}

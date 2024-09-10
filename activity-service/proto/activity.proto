@@ -1,0 +1,45 @@
+syntax = "proto3";
+option go_package = "/activity-service/proto";
+package activity;
+
+service ActivityService {
+  rpc LogActivity(LogActivityRequest) returns (LogActivityResponse);
+  rpc GetRecentActivities(GetRecentActivitiesRequest) returns (GetRecentActivitiesResponse);
+  rpc GetAllActivities(GetAllActivitiesRequest) returns (GetAllActivitiesResponse);
+}
+
+message LogActivityRequest {
+  string invoice_id = 1;
+  string user_id = 2;
+  string action = 3;
+  string description = 4;
+}
+
+message LogActivityResponse {
+  string status = 1;
+}
+
+message GetRecentActivitiesRequest {
+  string user_id = 1;
+  int32 limit = 2; // Limit number of recent activities
+}
+
+message GetRecentActivitiesResponse {
+  repeated Activity activities = 1;
+}
+
+message GetAllActivitiesRequest {
+  string invoice_id = 1;
+}
+
+message GetAllActivitiesResponse {
+  repeated Activity activities = 1;
+}
+
+message Activity {
+  string invoice_id = 1;
+  string user_id = 2;
+  string action = 3;
+  string description = 4;
+  string timestamp = 5;
+}

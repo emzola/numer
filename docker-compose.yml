@@ -2,13 +2,6 @@
 
 version: '3.9'
 services:
-  consul:
-    image: consul:1.14
-    container_name: consul
-    ports:
-      - "8500:8500"
-    command: "agent -dev -client=0.0.0.0"
- 
   user-service:
     build:
       context: ./user-service
@@ -67,6 +60,19 @@ services:
     depends_on:
       - consul
 
+  activity-service:
+    build:
+      context: ./activity-service
+      dockerfile: Dockerfile
+    env_file:
+      - ./activity-service/.env
+    ports:
+      - "50056:50056"
+    depends_on:
+      - activity-db
+      - consul
+      - rabbitmq
+
   user-db:
     image: postgres:latest
     env_file:
@@ -85,7 +91,30 @@ services:
     volumes:
       - invoice-db-data:/var/lib/postgresql/data
 
+  activity-db:
+    image: postgres:latest
+    env_file:
+      - ./activity-service/.env
+    ports:
+      - "5435:5432"
+    volumes:
+      - activity-db-data:/var/lib/postgresql/data
+
+  consul:
+    image: consul:1.14
+    container_name: consul
+    ports:
+      - "8500:8500"
+    command: "agent -dev -client=0.0.0.0"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
 volumes:
   user-db-data:
   invoice-db-data:
+  activity-db-data:
 
