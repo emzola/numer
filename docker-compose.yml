@@ -56,6 +56,17 @@ services:
     depends_on:
       - consul
 
+  reminders-service:
+    build:
+      context: ./reminders-service
+      dockerfile: Dockerfile
+    env_file:
+      - ./reminders-service/.env
+    ports:
+      - "50055:50055"
+    depends_on:
+      - consul
+
   user-db:
     image: postgres:latest
     env_file:

@@ -1,0 +1,17 @@
+syntax = "proto3";
+option go_package = "/reminders-service/proto";
+package reminders;
+
+service RemindersService {
+    rpc ScheduleReminder(ScheduleReminderRequest) returns (ScheduleReminderResponse) {}
+}
+  
+message ScheduleReminderRequest {
+    string invoice_id = 1;
+    string due_date = 2;
+    string customer_email = 3;
+}
+  
+message ScheduleReminderResponse {
+    string status = 1;
+}
