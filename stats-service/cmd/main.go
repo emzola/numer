@@ -13,14 +13,14 @@ import (
 	"time"
 
 	"github.com/emzola/numer/stats-service/config"
+	"github.com/emzola/numer/stats-service/internal/client"
+	"github.com/emzola/numer/stats-service/internal/grpcutil"
 	"github.com/emzola/numer/stats-service/internal/handler"
-	"github.com/emzola/numer/stats-service/internal/repository"
 	"github.com/emzola/numer/stats-service/internal/service"
 	"github.com/emzola/numer/stats-service/pkg/discovery"
 	consul "github.com/emzola/numer/stats-service/pkg/discovery/consul"
 	pb "github.com/emzola/numer/stats-service/proto"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 )
 
@@ -59,15 +59,15 @@ func main() {
 	defer registry.Deregister(ctx, instanceID, serviceName)
 
 	// Set up connection to the Invoice service
-	invoiceConn, err := grpc.NewClient(fmt.Sprintf("localhost%v", cfg.InvoiceGRPCServerAddress), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	invoiceConn, err := grpcutil.ServiceConnection(ctx, "invoice-service", registry)
 	if err != nil {
 		logger.Error("could not connect to invoice service", slog.Any("error", err))
 	}
 	defer invoiceConn.Close()
 
-	// Initialize repository, service and server
-	repo := repository.NewStatsRepository(invoiceConn)
-	svc := service.NewStatsService(repo)
+	// Initialize client, service and server
+	invoiceStatsClient := client.NewStatsClient(invoiceConn)
+	svc := service.NewStatsService(invoiceStatsClient)
 	handler := handler.NewStatsHandler(svc)
 
 	grpcServer := grpc.NewServer()

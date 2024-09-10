@@ -1,4 +1,4 @@
-package repository
+package client
 
 import (
 	"context"
@@ -7,17 +7,15 @@ import (
 	"google.golang.org/grpc"
 )
 
-type StatsRepository struct {
+type StatsClient struct {
 	invoiceClient invoicepb.InvoiceServiceClient
 }
 
-func NewStatsRepository(cc *grpc.ClientConn) *StatsRepository {
-	return &StatsRepository{
-		invoiceClient: invoicepb.NewInvoiceServiceClient(cc),
-	}
+func NewStatsClient(cc *grpc.ClientConn) *StatsClient {
+	return &StatsClient{invoiceClient: invoicepb.NewInvoiceServiceClient(cc)}
 }
 
-func (r *StatsRepository) GetAllInvoices(ctx context.Context) ([]*invoicepb.Invoice, error) {
+func (r *StatsClient) GetAllInvoices(ctx context.Context) ([]*invoicepb.Invoice, error) {
 	req := &invoicepb.ListInvoicesRequest{}
 	resp, err := r.invoiceClient.ListInvoices(ctx, req)
 	if err != nil {

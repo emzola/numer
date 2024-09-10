@@ -16,7 +16,7 @@ func NewStatsHandler(service *service.StatsService) *StatsHandler {
 	return &StatsHandler{service: service}
 }
 
-func (h *StatsHandler) GetMetrics(ctx context.Context, req *pb.GetStatsRequest) (*pb.GetStatsResponse, error) {
+func (h *StatsHandler) GetStats(ctx context.Context, req *pb.GetStatsRequest) (*pb.GetStatsResponse, error) {
 	metrics, err := h.service.GetStats(ctx)
 	if err != nil {
 		return nil, err

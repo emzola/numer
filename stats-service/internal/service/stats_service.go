@@ -4,35 +4,23 @@ import (
 	"context"
 
 	invoicepb "github.com/emzola/numer/invoice-service/proto"
+	"github.com/emzola/numer/stats-service/internal/models"
 )
 
-type statsRepository interface {
+type statsClient interface {
 	GetAllInvoices(ctx context.Context) ([]*invoicepb.Invoice, error)
 }
 
-type Stats struct {
-	TotalInvoices        int64
-	TotalPaidInvoices    int64
-	TotalOverdueInvoices int64
-	TotalDraftInvoices   int64
-	TotalUnpaidInvoices  int64
-
-	TotalAmountPaid    int64
-	TotalAmountOverdue int64
-	TotalAmountDraft   int64
-	TotalAmountUnpaid  int64
-}
-
 type StatsService struct {
-	invoiceRepo statsRepository
+	invoiceStatsClient statsClient
 }
 
-func NewStatsService(repo statsRepository) *StatsService {
-	return &StatsService{invoiceRepo: repo}
+func NewStatsService(invoiceStatsClient statsClient) *StatsService {
+	return &StatsService{invoiceStatsClient: invoiceStatsClient}
 }
 
-func (s *StatsService) GetStats(ctx context.Context) (*Stats, error) {
-	invoices, err := s.invoiceRepo.GetAllInvoices(ctx)
+func (s *StatsService) GetStats(ctx context.Context) (*models.Stats, error) {
+	invoices, err := s.invoiceStatsClient.GetAllInvoices(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +45,7 @@ func (s *StatsService) GetStats(ctx context.Context) (*Stats, error) {
 		}
 	}
 
-	stats := &Stats{
+	stats := &models.Stats{
 		TotalInvoices:        int64(len(invoices)),
 		TotalPaidInvoices:    totalPaid,
 		TotalOverdueInvoices: totalOverdue,
