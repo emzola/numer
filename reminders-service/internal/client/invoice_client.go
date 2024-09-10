@@ -17,7 +17,7 @@ func NewInvoiceClient(conn *grpc.ClientConn) *InvoiceClient {
 
 func (c *InvoiceClient) GetInvoicesDueSoon(ctx context.Context) ([]*invoicepb.Invoice, error) {
 	req := &invoicepb.GetDueInvoicesRequest{
-		DaysBeforeDue: 14, // Fetch invoices due in 14 days or less
+		Threshold: 14, // Fetch invoices due in 14 days or less
 	}
 	res, err := c.client.GetDueInvoices(ctx, req)
 	if err != nil {

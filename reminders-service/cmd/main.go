@@ -70,12 +70,21 @@ func main() {
 	}
 	defer notificationConn.Close()
 
-	invoiceClient := client.NewInvoiceClient(invoiceConn)
-	notificationClient := client.NewNotificationClient(invoiceConn)
+	// Set up connection to the User service
+	userConn, err := grpcutil.ServiceConnection(ctx, "user-service", registry)
+	if err != nil {
+		logger.Error("could not connect to user service", slog.Any("error", err))
+	}
+	defer userConn.Close()
 
-	// Initialize scheduler and server
-	scheduler := scheduler.NewScheduler(invoiceClient, notificationClient)
+	// Initialize and start reminders scheduler
+	scheduler := scheduler.NewScheduler(
+		client.NewInvoiceClient(invoiceConn),
+		client.NewNotificationClient(invoiceConn),
+		client.NewUserClient(userConn),
+	)
 
+	// Initialize server
 	grpcServer := grpc.NewServer()
 	reflection.Register(grpcServer)
 	pb.RegisterRemindersServiceServer(grpcServer, scheduler)
@@ -103,6 +112,8 @@ func main() {
 	if err := grpcServer.Serve(lis); err != nil {
 		panic(err)
 	}
+
+	scheduler.Start()
 
 	wg.Wait()
 }

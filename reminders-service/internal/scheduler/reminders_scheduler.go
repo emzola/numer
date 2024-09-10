@@ -14,13 +14,15 @@ import (
 type Scheduler struct {
 	invoiceClient      *client.InvoiceClient
 	notificationClient *client.NotificationClient
+	userClient         *client.UserClient
 	pb.UnimplementedRemindersServiceServer
 }
 
-func NewScheduler(invoiceClient *client.InvoiceClient, notificationClient *client.NotificationClient) *Scheduler {
+func NewScheduler(invoiceClient *client.InvoiceClient, notificationClient *client.NotificationClient, userClient *client.UserClient) *Scheduler {
 	return &Scheduler{
 		invoiceClient:      invoiceClient,
 		notificationClient: notificationClient,
+		userClient:         userClient,
 	}
 }
 
@@ -71,8 +73,14 @@ func (s *Scheduler) scheduleReminder(invoice *invoicepb.Invoice) {
 	}
 }
 
-func (s *Scheduler) sendReminder(invoice *invoicepb.Invoice, daysBefore int) {
-	// Call the Notification Microservice here to send an email or other notification
-	log.Printf("Sending reminder for Invoice ID: %s, Due in %d days", invoice.Id, daysBefore)
-	s.notificationClient.SendReminder(context.TODO(), invoice.Id, "TODO", daysBefore)
+func (s *Scheduler) sendReminder(invoice *invoicepb.Invoice, numDays int) {
+	// Get customer email associated with invoice
+	customerEmail, err := s.userClient.GetCustomerEmail(context.TODO(), invoice)
+	if err != nil {
+		log.Println("Error getting customer: ", err)
+	}
+
+	// Call the notification service here to send an email to customer
+	log.Printf("Sending reminder for Invoice ID: %d, Due in %d days", invoice.Id, numDays)
+	s.notificationClient.SendReminder(context.TODO(), invoice.Id, customerEmail, numDays)
 }
