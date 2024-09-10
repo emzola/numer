@@ -45,7 +45,7 @@ func (h *UserHandler) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.
 }
 
 func (h *UserHandler) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb.UserResponse, error) {
-	user := models.User{
+	user := &models.User{
 		ID:    req.UserId,
 		Email: req.Email,
 		Role:  req.Role,
@@ -77,7 +77,7 @@ func (h *UserHandler) DeleteUser(ctx context.Context, req *pb.DeleteUserRequest)
 
 // Customer Endpoints
 func (h *UserHandler) CreateCustomer(ctx context.Context, req *pb.CreateCustomerRequest) (*pb.CustomerResponse, error) {
-	customer := models.Customer{
+	customer := &models.Customer{
 		UserID:  req.UserId,
 		Name:    req.Name,
 		Email:   req.Email,
@@ -114,7 +114,7 @@ func (h *UserHandler) GetCustomer(ctx context.Context, req *pb.GetCustomerReques
 }
 
 func (h *UserHandler) UpdateCustomer(ctx context.Context, req *pb.UpdateCustomerRequest) (*pb.CustomerResponse, error) {
-	customer := models.Customer{
+	customer := &models.Customer{
 		ID:      req.CustomerId,
 		Name:    req.Name,
 		Email:   req.Email,
