@@ -5,18 +5,23 @@ import (
 
 	"github.com/emzola/numer/invoice-service/internal/models"
 	"github.com/emzola/numer/invoice-service/internal/service"
+	publisher "github.com/emzola/numer/invoice-service/internal/service/rabbitmq"
 	pb "github.com/emzola/numer/invoice-service/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 type InvoiceHandler struct {
-	service *service.InvoiceService
+	service   *service.InvoiceService
+	publisher *publisher.Publisher
 	pb.UnimplementedInvoiceServiceServer
 }
 
-func NewInvoiceHandler(service *service.InvoiceService) *InvoiceHandler {
-	return &InvoiceHandler{service: service}
+func NewInvoiceHandler(service *service.InvoiceService, publisher *publisher.Publisher) *InvoiceHandler {
+	return &InvoiceHandler{
+		service:   service,
+		publisher: publisher,
+	}
 }
 
 func (h *InvoiceHandler) CreateInvoice(ctx context.Context, req *pb.CreateInvoiceRequest) (*pb.CreateInvoiceResponse, error) {
@@ -47,6 +52,16 @@ func (h *InvoiceHandler) CreateInvoice(ctx context.Context, req *pb.CreateInvoic
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+
+	// Publish activity to rabbitMQ
+	message := map[string]interface{}{
+		"invoice_id":  invoice.ID,
+		"user_id":     invoice.UserID,
+		"action":      "Invoice creation",
+		"description": "Created invoice" + " " + invoice.InvoiceNumber,
+	}
+
+	h.publisher.Publish(message)
 
 	return &pb.CreateInvoiceResponse{InvoiceId: invoice.ID}, nil
 }

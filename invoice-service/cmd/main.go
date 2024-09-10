@@ -17,6 +17,7 @@ import (
 	"github.com/emzola/numer/invoice-service/internal/handler"
 	"github.com/emzola/numer/invoice-service/internal/repository"
 	"github.com/emzola/numer/invoice-service/internal/service"
+	publisher "github.com/emzola/numer/invoice-service/internal/service/rabbitmq"
 	"github.com/emzola/numer/invoice-service/pkg/discovery"
 	consul "github.com/emzola/numer/invoice-service/pkg/discovery/consul"
 	pb "github.com/emzola/numer/invoice-service/proto"
@@ -67,10 +68,18 @@ func main() {
 	defer dbpool.Close()
 	logger.Info("database connection established")
 
-	// Initialize repository, service and server
+	// Initialize repository, service and publisher
 	repo := repository.NewInvoiceRepository(dbpool)
 	svc := service.NewInvoiceService(repo)
-	handler := handler.NewInvoiceHandler(svc)
+	publisher, err := publisher.NewPublisher(os.Getenv("RABBITMQ_URL"), "activity_logs")
+	if err != nil {
+		logger.Error("failed to initialize RabbitMQ publisher", slog.Any("error", err))
+		return
+	}
+	defer publisher.Close()
+
+	// Initialize gRPC handler with service and publisher
+	handler := handler.NewInvoiceHandler(svc, publisher)
 
 	grpcServer := grpc.NewServer()
 	reflection.Register(grpcServer)
