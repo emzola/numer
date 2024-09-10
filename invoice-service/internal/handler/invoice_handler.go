@@ -115,3 +115,17 @@ func (s *InvoiceHandler) ListInvoices(ctx context.Context, req *pb.ListInvoicesR
 		NextPageToken: nextPageToken,
 	}, nil
 }
+
+func (s *InvoiceHandler) GetDueInvoices(ctx context.Context, req *pb.GetDueInvoicesRequest) (*pb.GetDueInvoicesResponse, error) {
+	invoices, err := s.service.GetDueInvoices(ctx, req.Threshold)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+
+	protoInvoices := make([]*pb.Invoice, len(invoices))
+	for i, invoice := range invoices {
+		protoInvoices[i] = models.ConvertInvoiceToProto(invoice)
+	}
+
+	return &pb.GetDueInvoicesResponse{Invoices: protoInvoices}, nil
+}

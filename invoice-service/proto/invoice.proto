@@ -9,6 +9,7 @@ service InvoiceService {
     rpc GetInvoice(GetInvoiceRequest) returns (GetInvoiceResponse);
     rpc UpdateInvoice(UpdateInvoiceRequest) returns (UpdateInvoiceResponse);
     rpc ListInvoices(ListInvoicesRequest) returns (ListInvoicesResponse);
+    rpc GetDueInvoices(GetDueInvoicesRequest) returns (GetDueInvoicesResponse);
     rpc SendInvoice(SendInvoiceRequest) returns (SendInvoiceResponse);
 }
 
@@ -80,6 +81,13 @@ message Invoice {
     string note = 18;
 }
 
+message InvoiceItem {
+    int64 id = 1;
+    string description = 2;
+    int32 quantity = 3;
+    int64 unit_price = 4; // Represented in cents
+}
+
 message ListInvoicesRequest {
     int64 user_id = 1;
     int32 page_size = 2; 
@@ -91,11 +99,12 @@ message ListInvoicesResponse {
     string next_page_token = 2;
 }
 
-message InvoiceItem {
-    int64 id = 1;
-    string description = 2;
-    int32 quantity = 3;
-    int64 unit_price = 4; // Represented in cents
+message GetDueInvoicesRequest {
+    int32 threshold = 1;
+}
+
+message GetDueInvoicesResponse {
+    repeated Invoice invoices = 1;
 }
 
 message SendInvoiceRequest {

@@ -20,6 +20,7 @@ type invoiceRepository interface {
 	GetInvoiceByID(ctx context.Context, invoiceID int64) (*models.Invoice, error)
 	UpdateInvoice(ctx context.Context, invoice *models.Invoice) error
 	ListInvoicesByUserID(ctx context.Context, userID int64, pageSize int, pageToken string) ([]*models.Invoice, string, error)
+	GetDueInvoices(ctx context.Context, daysBeforeDue int32) ([]*models.Invoice, error)
 	IncrementInvoiceNumber(ctx context.Context) (int64, error)
 }
 
@@ -82,6 +83,15 @@ func (s *InvoiceService) ListInvoicesByUserID(ctx context.Context, userID int64,
 	}
 
 	return invoices, nextPageToken, nil
+}
+
+func (s *InvoiceService) GetDueInvoices(ctx context.Context, threshold int32) ([]*models.Invoice, error) {
+	invoices, err := s.repo.GetDueInvoices(ctx, threshold)
+	if err != nil {
+		return nil, err
+	}
+
+	return invoices, nil
 }
 
 // ConvertDecimalToCents converts a decimal.Decimal to int64 (cents).
