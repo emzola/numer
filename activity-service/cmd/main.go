@@ -47,7 +47,7 @@ func main() {
 		logger.Error("failed to create new consul-based service registry instance", slog.Any("error", err))
 	}
 	instanceID := discovery.GenerateInstanceID(serviceName)
-	if err := registry.Register(ctx, instanceID, serviceName, fmt.Sprintf("0.0.0.0%v", cfg.GRPCServerAddress)); err != nil {
+	if err := registry.Register(ctx, instanceID, serviceName, fmt.Sprintf("host.docker.internal%v", cfg.GRPCServerAddress)); err != nil {
 		logger.Error("failed to create a service record in the registry", slog.Any("error", err))
 	}
 	go func() {
@@ -82,11 +82,12 @@ func main() {
 		logger.Error("failed to listen", slog.Any("error", err))
 	}
 
+	var wg sync.WaitGroup
+	wg.Add(2)
+
 	// Graceful shutdown
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
-	var wg sync.WaitGroup
-	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		s := <-stop
@@ -96,23 +97,25 @@ func main() {
 		logger.Info("server stopped")
 	}()
 
+	// RabbitMQ Consumer
+	go func() {
+		consumer, err := rabbitmq.NewConsumer(os.Getenv("RABBITMQ_URL"), "activity_logs", repo)
+		if err != nil {
+			logger.Error("failed to connect to rabbitMQ", slog.Any("error", err))
+		}
+		defer consumer.Close()
+
+		// Start consuming messages
+		consumer.ConsumeMessages()
+
+		// Keep the service running
+		select {}
+	}()
+
 	logger.Info("activity service running", slog.String("port", cfg.GRPCServerAddress))
 	if err := grpcServer.Serve(lis); err != nil {
 		panic(err)
 	}
 
 	wg.Wait()
-
-	// Initialize RabbitMQ
-	consumer, err := rabbitmq.NewConsumer(os.Getenv("RABBITMQ_URL"), "activity_logs", repo)
-	if err != nil {
-		logger.Error("failed to connect to rabbitMQ", slog.Any("error", err))
-	}
-	defer consumer.Close()
-
-	// Start consuming messages
-	consumer.ConsumeMessages()
-
-	// Keep the service running
-	select {}
 }

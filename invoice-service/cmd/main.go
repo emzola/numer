@@ -46,7 +46,7 @@ func main() {
 		logger.Error("failed to create new consul-based service registry instance", slog.Any("error", err))
 	}
 	instanceID := discovery.GenerateInstanceID(serviceName)
-	if err := registry.Register(ctx, instanceID, serviceName, fmt.Sprintf("localhost%v", cfg.GRPCServerAddress)); err != nil {
+	if err := registry.Register(ctx, instanceID, serviceName, fmt.Sprintf("host.docker.internal%v", cfg.GRPCServerAddress)); err != nil {
 		logger.Error("failed to create a service record in the registry", slog.Any("error", err))
 	}
 	go func() {

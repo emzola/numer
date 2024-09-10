@@ -46,7 +46,7 @@ func main() {
 		panic(err)
 	}
 	instanceID := discovery.GenerateInstanceID(serviceName)
-	if err := registry.Register(ctx, instanceID, serviceName, fmt.Sprintf("0.0.0.0%v", cfg.GRPCServerAddress)); err != nil {
+	if err := registry.Register(ctx, instanceID, serviceName, fmt.Sprintf("host.docker.internal%v", cfg.GRPCServerAddress)); err != nil {
 		panic(err)
 	}
 	go func() {
