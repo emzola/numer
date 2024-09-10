@@ -1,4 +1,4 @@
-module github.com/emzola/numer/userservice
+module github.com/emzola/numer/user-service
 
 go 1.22.0
 

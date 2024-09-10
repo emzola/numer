@@ -3,12 +3,11 @@ package service
 import (
 	"context"
 
-	"github.com/emzola/numer/userservice/internal/models"
-	"github.com/emzola/numer/userservice/internal/repository"
+	"github.com/emzola/numer/user-service/internal/models"
 	"golang.org/x/crypto/bcrypt"
 )
 
-type UserService interface {
+type userRepository interface {
 	// User management methods
 	CreateUser(ctx context.Context, email, password, role string) (models.User, error)
 	GetUserByID(ctx context.Context, userID int64) (models.User, error)
@@ -22,16 +21,16 @@ type UserService interface {
 	DeleteCustomer(ctx context.Context, customerID int64) error
 }
 
-type userService struct {
-	repo repository.UserRepository
+type UserService struct {
+	repo userRepository
 }
 
-func NewUserService(repo repository.UserRepository) UserService {
-	return &userService{repo: repo}
+func NewUserService(repo userRepository) *UserService {
+	return &UserService{repo: repo}
 }
 
 // User Management
-func (s *userService) CreateUser(ctx context.Context, email, password, role string) (models.User, error) {
+func (s *UserService) CreateUser(ctx context.Context, email, password, role string) (models.User, error) {
 	// Hash password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -43,11 +42,11 @@ func (s *userService) CreateUser(ctx context.Context, email, password, role stri
 	return user, err
 }
 
-func (s *userService) GetUserByID(ctx context.Context, userID int64) (models.User, error) {
+func (s *UserService) GetUserByID(ctx context.Context, userID int64) (models.User, error) {
 	return s.repo.GetUserByID(ctx, userID)
 }
 
-func (s *userService) UpdateUser(ctx context.Context, user models.User) error {
+func (s *UserService) UpdateUser(ctx context.Context, user models.User) error {
 	// Hash password if provided
 	if user.HashedPassword != "" {
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.HashedPassword), bcrypt.DefaultCost)
@@ -59,23 +58,23 @@ func (s *userService) UpdateUser(ctx context.Context, user models.User) error {
 	return s.repo.UpdateUser(ctx, user)
 }
 
-func (s *userService) DeleteUser(ctx context.Context, userID int64) error {
+func (s *UserService) DeleteUser(ctx context.Context, userID int64) error {
 	return s.repo.DeleteUser(ctx, userID)
 }
 
 // Customer Management
-func (s *userService) CreateCustomer(ctx context.Context, customer models.Customer) (models.Customer, error) {
+func (s *UserService) CreateCustomer(ctx context.Context, customer models.Customer) (models.Customer, error) {
 	return s.repo.CreateCustomer(ctx, customer)
 }
 
-func (s *userService) GetCustomerByID(ctx context.Context, customerID int64) (models.Customer, error) {
+func (s *UserService) GetCustomerByID(ctx context.Context, customerID int64) (models.Customer, error) {
 	return s.repo.GetCustomerByID(ctx, customerID)
 }
 
-func (s *userService) UpdateCustomer(ctx context.Context, customer models.Customer) error {
+func (s *UserService) UpdateCustomer(ctx context.Context, customer models.Customer) error {
 	return s.repo.UpdateCustomer(ctx, customer)
 }
 
-func (s *userService) DeleteCustomer(ctx context.Context, customerID int64) error {
+func (s *UserService) DeleteCustomer(ctx context.Context, customerID int64) error {
 	return s.repo.DeleteCustomer(ctx, customerID)
 }

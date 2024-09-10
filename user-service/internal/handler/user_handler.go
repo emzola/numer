@@ -3,20 +3,18 @@ package handler
 import (
 	"context"
 
-	"github.com/emzola/numer/userservice/internal/models"
-	"github.com/emzola/numer/userservice/internal/service"
-	pb "github.com/emzola/numer/userservice/proto"
+	"github.com/emzola/numer/user-service/internal/models"
+	"github.com/emzola/numer/user-service/internal/service"
+	pb "github.com/emzola/numer/user-service/proto"
 )
 
 type UserHandler struct {
-	userService service.UserService
+	userService *service.UserService
 	pb.UnimplementedUserServiceServer
 }
 
-func NewUserHandler(userService service.UserService) *UserHandler {
-	return &UserHandler{
-		userService: userService,
-	}
+func NewUserHandler(userService *service.UserService) *UserHandler {
+	return &UserHandler{userService: userService}
 }
 
 // User Endpoints

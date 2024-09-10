@@ -13,19 +13,19 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/emzola/numer/userservice/config"
-	"github.com/emzola/numer/userservice/internal/handler"
-	"github.com/emzola/numer/userservice/internal/repository"
-	"github.com/emzola/numer/userservice/internal/service"
-	"github.com/emzola/numer/userservice/pkg/discovery"
-	consul "github.com/emzola/numer/userservice/pkg/discovery/consul"
-	pb "github.com/emzola/numer/userservice/proto"
+	"github.com/emzola/numer/user-service/config"
+	"github.com/emzola/numer/user-service/internal/handler"
+	"github.com/emzola/numer/user-service/internal/repository"
+	"github.com/emzola/numer/user-service/internal/service"
+	"github.com/emzola/numer/user-service/pkg/discovery"
+	consul "github.com/emzola/numer/user-service/pkg/discovery/consul"
+	pb "github.com/emzola/numer/user-service/proto"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
 
-const serviceName = "userservice"
+const serviceName = "user-service"
 
 func main() {
 	// Initialize logger

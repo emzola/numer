@@ -5,34 +5,20 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/emzola/numer/userservice/internal/models"
+	"github.com/emzola/numer/user-service/internal/models"
 	"golang.org/x/crypto/bcrypt"
 )
 
-type UserRepository interface {
-	// User management methods
-	CreateUser(ctx context.Context, email, password, role string) (models.User, error)
-	GetUserByID(ctx context.Context, userID int64) (models.User, error)
-	UpdateUser(ctx context.Context, user models.User) error
-	DeleteUser(ctx context.Context, userID int64) error
-
-	// Customer management methods
-	CreateCustomer(ctx context.Context, customer models.Customer) (models.Customer, error)
-	GetCustomerByID(ctx context.Context, customerID int64) (models.Customer, error)
-	UpdateCustomer(ctx context.Context, customer models.Customer) error
-	DeleteCustomer(ctx context.Context, customerID int64) error
-}
-
-type userRepo struct {
+type UserRepository struct {
 	db *sql.DB
 }
 
-func NewUserRepository(db *sql.DB) UserRepository {
-	return &userRepo{db}
+func NewUserRepository(db *sql.DB) *UserRepository {
+	return &UserRepository{db}
 }
 
 // User management
-func (r *userRepo) CreateUser(ctx context.Context, email, password, role string) (models.User, error) {
+func (r *UserRepository) CreateUser(ctx context.Context, email, password, role string) (models.User, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return models.User{}, err
@@ -52,7 +38,7 @@ func (r *userRepo) CreateUser(ctx context.Context, email, password, role string)
 	return user, err
 }
 
-func (r *userRepo) GetUserByID(ctx context.Context, userID int64) (models.User, error) {
+func (r *UserRepository) GetUserByID(ctx context.Context, userID int64) (models.User, error) {
 	var user models.User
 	err := r.db.QueryRowContext(ctx,
 		"SELECT id, email, hashed_password, role, created_at, updated_at FROM users WHERE id = $1",
@@ -63,20 +49,20 @@ func (r *userRepo) GetUserByID(ctx context.Context, userID int64) (models.User, 
 	return user, err
 }
 
-func (r *userRepo) UpdateUser(ctx context.Context, user models.User) error {
+func (r *UserRepository) UpdateUser(ctx context.Context, user models.User) error {
 	_, err := r.db.ExecContext(ctx,
 		"UPDATE users SET email = $1, hashed_password = $2, role = $3, updated_at = NOW() WHERE id = $4",
 		user.Email, user.HashedPassword, user.Role, user.ID)
 	return err
 }
 
-func (r *userRepo) DeleteUser(ctx context.Context, userID int64) error {
+func (r *UserRepository) DeleteUser(ctx context.Context, userID int64) error {
 	_, err := r.db.ExecContext(ctx, "DELETE FROM users WHERE id = $1", userID)
 	return err
 }
 
 // Customer management
-func (r *userRepo) CreateCustomer(ctx context.Context, customer models.Customer) (models.Customer, error) {
+func (r *UserRepository) CreateCustomer(ctx context.Context, customer models.Customer) (models.Customer, error) {
 	err := r.db.QueryRowContext(ctx,
 		"INSERT INTO customers (user_id, name, email, address) VALUES ($1, $2, $3, $4) RETURNING id, created_at, updated_at",
 		customer.UserID, customer.Name, customer.Email, customer.Address).
@@ -85,7 +71,7 @@ func (r *userRepo) CreateCustomer(ctx context.Context, customer models.Customer)
 	return customer, err
 }
 
-func (r *userRepo) GetCustomerByID(ctx context.Context, customerID int64) (models.Customer, error) {
+func (r *UserRepository) GetCustomerByID(ctx context.Context, customerID int64) (models.Customer, error) {
 	var customer models.Customer
 	err := r.db.QueryRowContext(ctx,
 		"SELECT id, user_id, name, email, address, created_at, updated_at FROM customers WHERE id = $1",
@@ -96,14 +82,14 @@ func (r *userRepo) GetCustomerByID(ctx context.Context, customerID int64) (model
 	return customer, err
 }
 
-func (r *userRepo) UpdateCustomer(ctx context.Context, customer models.Customer) error {
+func (r *UserRepository) UpdateCustomer(ctx context.Context, customer models.Customer) error {
 	_, err := r.db.ExecContext(ctx,
 		"UPDATE customers SET name = $1, email = $2, address = $3, updated_at = NOW() WHERE id = $4",
 		customer.Name, customer.Email, customer.Address, customer.ID)
 	return err
 }
 
-func (r *userRepo) DeleteCustomer(ctx context.Context, customerID int64) error {
+func (r *UserRepository) DeleteCustomer(ctx context.Context, customerID int64) error {
 	_, err := r.db.ExecContext(ctx, "DELETE FROM customers WHERE id = $1", customerID)
 	return err
 }

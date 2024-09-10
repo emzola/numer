@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/emzola/numer/userservice/internal/models"
-	"github.com/emzola/numer/userservice/internal/service"
+	"github.com/emzola/numer/user-service/internal/models"
+	"github.com/emzola/numer/user-service/internal/service"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
