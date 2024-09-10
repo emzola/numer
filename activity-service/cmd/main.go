@@ -17,6 +17,7 @@ import (
 	"github.com/emzola/numer/activity-service/internal/handler"
 	"github.com/emzola/numer/activity-service/internal/repository"
 	"github.com/emzola/numer/activity-service/internal/service"
+	"github.com/emzola/numer/activity-service/internal/service/rabbitmq"
 	"github.com/emzola/numer/activity-service/pkg/discovery"
 	consul "github.com/emzola/numer/activity-service/pkg/discovery/consul"
 	pb "github.com/emzola/numer/activity-service/proto"
@@ -101,4 +102,17 @@ func main() {
 	}
 
 	wg.Wait()
+
+	// Initialize RabbitMQ
+	consumer, err := rabbitmq.NewConsumer(os.Getenv("RABBITMQ_URL"), "activity_logs", repo)
+	if err != nil {
+		logger.Error("failed to connect to rabbitMQ", slog.Any("error", err))
+	}
+	defer consumer.Close()
+
+	// Start consuming messages
+	consumer.ConsumeMessages()
+
+	// Keep the service running
+	select {}
 }

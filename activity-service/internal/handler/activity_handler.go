@@ -17,16 +17,8 @@ func NewActivityHandler(service *service.ActivityService) *ActivityHandler {
 	return &ActivityHandler{service: service}
 }
 
-func (h *ActivityHandler) LogActivity(ctx context.Context, req *pb.LogActivityRequest) (*pb.LogActivityResponse, error) {
-	err := h.service.LogActivity(ctx, req.InvoiceId, req.UserId, req.Action, req.Description)
-	if err != nil {
-		return nil, err
-	}
-	return &pb.LogActivityResponse{Status: "Success"}, nil
-}
-
-func (h *ActivityHandler) GetRecentActivities(ctx context.Context, req *pb.GetRecentActivitiesRequest) (*pb.GetRecentActivitiesResponse, error) {
-	activities, err := h.service.GetRecentActivities(ctx, req.UserId, int(req.Limit))
+func (h *ActivityHandler) GetUserActivities(ctx context.Context, req *pb.GetUserActivitiesRequest) (*pb.GetUserActivitiesResponse, error) {
+	activities, err := h.service.GetUserActivities(ctx, req.UserId, int(req.Limit))
 	if err != nil {
 		return nil, err
 	}
@@ -36,11 +28,11 @@ func (h *ActivityHandler) GetRecentActivities(ctx context.Context, req *pb.GetRe
 		protoActivities[i] = models.ConvertActivityToProto(activity)
 	}
 
-	return &pb.GetRecentActivitiesResponse{Activities: protoActivities}, nil
+	return &pb.GetUserActivitiesResponse{Activities: protoActivities}, nil
 }
 
-func (h *ActivityHandler) GetAllActivities(ctx context.Context, req *pb.GetAllActivitiesRequest) (*pb.GetAllActivitiesResponse, error) {
-	activities, err := h.service.GetAllActivities(ctx, req.InvoiceId)
+func (h *ActivityHandler) GetInvoiceActivities(ctx context.Context, req *pb.GetInvoiceActivitiesRequest) (*pb.GetInvoiceActivitiesResponse, error) {
+	activities, err := h.service.GetInvoiceActivities(ctx, req.InvoiceId)
 	if err != nil {
 		return nil, err
 	}
@@ -50,5 +42,5 @@ func (h *ActivityHandler) GetAllActivities(ctx context.Context, req *pb.GetAllAc
 		protoActivities[i] = models.ConvertActivityToProto(activity)
 	}
 
-	return &pb.GetAllActivitiesResponse{Activities: protoActivities}, nil
+	return &pb.GetInvoiceActivitiesResponse{Activities: protoActivities}, nil
 }

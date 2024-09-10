@@ -8,9 +8,9 @@ import (
 )
 
 type activityRepository interface {
-	LogActivity(ctx context.Context, activity *models.Activity) error
-	GetRecentActivities(ctx context.Context, userID string, limit int) ([]*models.Activity, error)
-	GetAllActivities(ctx context.Context, invoiceID string) ([]*models.Activity, error)
+	LogActivity(ctx context.Context, activity *models.Activity)
+	GetUserActivities(ctx context.Context, userID string, limit int) ([]*models.Activity, error)
+	GetInvoiceActivities(ctx context.Context, invoiceID string) ([]*models.Activity, error)
 }
 
 type ActivityService struct {
@@ -21,7 +21,7 @@ func NewActivityService(repo activityRepository) *ActivityService {
 	return &ActivityService{repo: repo}
 }
 
-func (s *ActivityService) LogActivity(ctx context.Context, invoiceID, userID, action, description string) error {
+func (s *ActivityService) LogActivity(ctx context.Context, invoiceID, userID int64, action, description string) {
 	activity := &models.Activity{
 		InvoiceID:   invoiceID,
 		UserID:      userID,
@@ -29,13 +29,13 @@ func (s *ActivityService) LogActivity(ctx context.Context, invoiceID, userID, ac
 		Description: description,
 		Timestamp:   time.Now(),
 	}
-	return s.repo.LogActivity(ctx, activity)
+	s.repo.LogActivity(ctx, activity)
 }
 
-func (s *ActivityService) GetRecentActivities(ctx context.Context, userID string, limit int) ([]*models.Activity, error) {
-	return s.repo.GetRecentActivities(ctx, userID, limit)
+func (s *ActivityService) GetUserActivities(ctx context.Context, userID string, limit int) ([]*models.Activity, error) {
+	return s.repo.GetUserActivities(ctx, userID, limit)
 }
 
-func (s *ActivityService) GetAllActivities(ctx context.Context, invoiceID string) ([]*models.Activity, error) {
-	return s.repo.GetAllActivities(ctx, invoiceID)
+func (s *ActivityService) GetInvoiceActivities(ctx context.Context, invoiceID string) ([]*models.Activity, error) {
+	return s.repo.GetInvoiceActivities(ctx, invoiceID)
 }

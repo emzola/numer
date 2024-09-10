@@ -19,18 +19,16 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	ActivityService_LogActivity_FullMethodName         = "/activity.ActivityService/LogActivity"
-	ActivityService_GetRecentActivities_FullMethodName = "/activity.ActivityService/GetRecentActivities"
-	ActivityService_GetAllActivities_FullMethodName    = "/activity.ActivityService/GetAllActivities"
+	ActivityService_GetUserActivities_FullMethodName    = "/activity.ActivityService/GetUserActivities"
+	ActivityService_GetInvoiceActivities_FullMethodName = "/activity.ActivityService/GetInvoiceActivities"
 )
 
 // ActivityServiceClient is the client API for ActivityService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ActivityServiceClient interface {
-	LogActivity(ctx context.Context, in *LogActivityRequest, opts ...grpc.CallOption) (*LogActivityResponse, error)
-	GetRecentActivities(ctx context.Context, in *GetRecentActivitiesRequest, opts ...grpc.CallOption) (*GetRecentActivitiesResponse, error)
-	GetAllActivities(ctx context.Context, in *GetAllActivitiesRequest, opts ...grpc.CallOption) (*GetAllActivitiesResponse, error)
+	GetUserActivities(ctx context.Context, in *GetUserActivitiesRequest, opts ...grpc.CallOption) (*GetUserActivitiesResponse, error)
+	GetInvoiceActivities(ctx context.Context, in *GetInvoiceActivitiesRequest, opts ...grpc.CallOption) (*GetInvoiceActivitiesResponse, error)
 }
 
 type activityServiceClient struct {
@@ -41,27 +39,18 @@ func NewActivityServiceClient(cc grpc.ClientConnInterface) ActivityServiceClient
 	return &activityServiceClient{cc}
 }
 
-func (c *activityServiceClient) LogActivity(ctx context.Context, in *LogActivityRequest, opts ...grpc.CallOption) (*LogActivityResponse, error) {
-	out := new(LogActivityResponse)
-	err := c.cc.Invoke(ctx, ActivityService_LogActivity_FullMethodName, in, out, opts...)
+func (c *activityServiceClient) GetUserActivities(ctx context.Context, in *GetUserActivitiesRequest, opts ...grpc.CallOption) (*GetUserActivitiesResponse, error) {
+	out := new(GetUserActivitiesResponse)
+	err := c.cc.Invoke(ctx, ActivityService_GetUserActivities_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *activityServiceClient) GetRecentActivities(ctx context.Context, in *GetRecentActivitiesRequest, opts ...grpc.CallOption) (*GetRecentActivitiesResponse, error) {
-	out := new(GetRecentActivitiesResponse)
-	err := c.cc.Invoke(ctx, ActivityService_GetRecentActivities_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *activityServiceClient) GetAllActivities(ctx context.Context, in *GetAllActivitiesRequest, opts ...grpc.CallOption) (*GetAllActivitiesResponse, error) {
-	out := new(GetAllActivitiesResponse)
-	err := c.cc.Invoke(ctx, ActivityService_GetAllActivities_FullMethodName, in, out, opts...)
+func (c *activityServiceClient) GetInvoiceActivities(ctx context.Context, in *GetInvoiceActivitiesRequest, opts ...grpc.CallOption) (*GetInvoiceActivitiesResponse, error) {
+	out := new(GetInvoiceActivitiesResponse)
+	err := c.cc.Invoke(ctx, ActivityService_GetInvoiceActivities_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -72,9 +61,8 @@ func (c *activityServiceClient) GetAllActivities(ctx context.Context, in *GetAll
 // All implementations must embed UnimplementedActivityServiceServer
 // for forward compatibility
 type ActivityServiceServer interface {
-	LogActivity(context.Context, *LogActivityRequest) (*LogActivityResponse, error)
-	GetRecentActivities(context.Context, *GetRecentActivitiesRequest) (*GetRecentActivitiesResponse, error)
-	GetAllActivities(context.Context, *GetAllActivitiesRequest) (*GetAllActivitiesResponse, error)
+	GetUserActivities(context.Context, *GetUserActivitiesRequest) (*GetUserActivitiesResponse, error)
+	GetInvoiceActivities(context.Context, *GetInvoiceActivitiesRequest) (*GetInvoiceActivitiesResponse, error)
 	mustEmbedUnimplementedActivityServiceServer()
 }
 
@@ -82,14 +70,11 @@ type ActivityServiceServer interface {
 type UnimplementedActivityServiceServer struct {
 }
 
-func (UnimplementedActivityServiceServer) LogActivity(context.Context, *LogActivityRequest) (*LogActivityResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method LogActivity not implemented")
+func (UnimplementedActivityServiceServer) GetUserActivities(context.Context, *GetUserActivitiesRequest) (*GetUserActivitiesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserActivities not implemented")
 }
-func (UnimplementedActivityServiceServer) GetRecentActivities(context.Context, *GetRecentActivitiesRequest) (*GetRecentActivitiesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetRecentActivities not implemented")
-}
-func (UnimplementedActivityServiceServer) GetAllActivities(context.Context, *GetAllActivitiesRequest) (*GetAllActivitiesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetAllActivities not implemented")
+func (UnimplementedActivityServiceServer) GetInvoiceActivities(context.Context, *GetInvoiceActivitiesRequest) (*GetInvoiceActivitiesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetInvoiceActivities not implemented")
 }
 func (UnimplementedActivityServiceServer) mustEmbedUnimplementedActivityServiceServer() {}
 
@@ -104,56 +89,38 @@ func RegisterActivityServiceServer(s grpc.ServiceRegistrar, srv ActivityServiceS
 	s.RegisterService(&ActivityService_ServiceDesc, srv)
 }
 
-func _ActivityService_LogActivity_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LogActivityRequest)
+func _ActivityService_GetUserActivities_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserActivitiesRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ActivityServiceServer).LogActivity(ctx, in)
+		return srv.(ActivityServiceServer).GetUserActivities(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: ActivityService_LogActivity_FullMethodName,
+		FullMethod: ActivityService_GetUserActivities_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ActivityServiceServer).LogActivity(ctx, req.(*LogActivityRequest))
+		return srv.(ActivityServiceServer).GetUserActivities(ctx, req.(*GetUserActivitiesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ActivityService_GetRecentActivities_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetRecentActivitiesRequest)
+func _ActivityService_GetInvoiceActivities_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetInvoiceActivitiesRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ActivityServiceServer).GetRecentActivities(ctx, in)
+		return srv.(ActivityServiceServer).GetInvoiceActivities(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: ActivityService_GetRecentActivities_FullMethodName,
+		FullMethod: ActivityService_GetInvoiceActivities_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ActivityServiceServer).GetRecentActivities(ctx, req.(*GetRecentActivitiesRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _ActivityService_GetAllActivities_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetAllActivitiesRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ActivityServiceServer).GetAllActivities(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: ActivityService_GetAllActivities_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ActivityServiceServer).GetAllActivities(ctx, req.(*GetAllActivitiesRequest))
+		return srv.(ActivityServiceServer).GetInvoiceActivities(ctx, req.(*GetInvoiceActivitiesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -166,16 +133,12 @@ var ActivityService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*ActivityServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "LogActivity",
-			Handler:    _ActivityService_LogActivity_Handler,
+			MethodName: "GetUserActivities",
+			Handler:    _ActivityService_GetUserActivities_Handler,
 		},
 		{
-			MethodName: "GetRecentActivities",
-			Handler:    _ActivityService_GetRecentActivities_Handler,
-		},
-		{
-			MethodName: "GetAllActivities",
-			Handler:    _ActivityService_GetAllActivities_Handler,
+			MethodName: "GetInvoiceActivities",
+			Handler:    _ActivityService_GetInvoiceActivities_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

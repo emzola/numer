@@ -3,42 +3,30 @@ option go_package = "/activity-service/proto";
 package activity;
 
 service ActivityService {
-  rpc LogActivity(LogActivityRequest) returns (LogActivityResponse);
-  rpc GetRecentActivities(GetRecentActivitiesRequest) returns (GetRecentActivitiesResponse);
-  rpc GetAllActivities(GetAllActivitiesRequest) returns (GetAllActivitiesResponse);
+  rpc GetUserActivities(GetUserActivitiesRequest) returns (GetUserActivitiesResponse);
+  rpc GetInvoiceActivities(GetInvoiceActivitiesRequest) returns (GetInvoiceActivitiesResponse);
 }
 
-message LogActivityRequest {
-  string invoice_id = 1;
-  string user_id = 2;
-  string action = 3;
-  string description = 4;
-}
-
-message LogActivityResponse {
-  string status = 1;
-}
-
-message GetRecentActivitiesRequest {
+message GetUserActivitiesRequest {
   string user_id = 1;
-  int32 limit = 2; // Limit number of recent activities
+  int32 limit = 2; // Limit number of recent activities. Better to implement pagination
 }
 
-message GetRecentActivitiesResponse {
+message GetUserActivitiesResponse {
   repeated Activity activities = 1;
 }
 
-message GetAllActivitiesRequest {
+message GetInvoiceActivitiesRequest {
   string invoice_id = 1;
 }
 
-message GetAllActivitiesResponse {
+message GetInvoiceActivitiesResponse {
   repeated Activity activities = 1;
 }
 
 message Activity {
-  string invoice_id = 1;
-  string user_id = 2;
+  int64 invoice_id = 1;
+  int64 user_id = 2;
   string action = 3;
   string description = 4;
   string timestamp = 5;
