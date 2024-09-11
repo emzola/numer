@@ -17,20 +17,20 @@ func NewStatsHandler(service *service.StatsService) *StatsHandler {
 }
 
 func (h *StatsHandler) GetStats(ctx context.Context, req *pb.GetStatsRequest) (*pb.GetStatsResponse, error) {
-	metrics, err := h.service.GetStats(ctx)
+	stats, err := h.service.GetStats(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	return &pb.GetStatsResponse{
-		TotalInvoices:        metrics.TotalInvoices,
-		TotalPaidInvoices:    metrics.TotalPaidInvoices,
-		TotalOverdueInvoices: metrics.TotalOverdueInvoices,
-		TotalDraftInvoices:   metrics.TotalDraftInvoices,
-		TotalUnpaidInvoices:  metrics.TotalUnpaidInvoices,
-		TotalAmountPaid:      metrics.TotalAmountPaid,
-		TotalAmountOverdue:   metrics.TotalAmountOverdue,
-		TotalAmountDraft:     metrics.TotalAmountDraft,
-		TotalAmountUnpaid:    metrics.TotalAmountUnpaid,
+		TotalInvoices:        stats.TotalInvoices,
+		TotalPaidInvoices:    stats.TotalPaidInvoices,
+		TotalOverdueInvoices: stats.TotalOverdueInvoices,
+		TotalDraftInvoices:   stats.TotalDraftInvoices,
+		TotalUnpaidInvoices:  stats.TotalUnpaidInvoices,
+		TotalAmountPaid:      stats.TotalAmountPaid,
+		TotalAmountOverdue:   stats.TotalAmountOverdue,
+		TotalAmountDraft:     stats.TotalAmountDraft,
+		TotalAmountUnpaid:    stats.TotalAmountUnpaid,
 	}, nil
 }

@@ -2,19 +2,6 @@
 
 version: '3.9'
 services:
-  consul:
-    image: consul:1.14
-    container_name: consul
-    ports:
-      - "8500:8500"
-    command: "agent -dev -client=0.0.0.0"
-
-  rabbitmq:
-    image: rabbitmq:3-management
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-      
   user-service:
     build:
       context: ./user-service
@@ -86,6 +73,31 @@ services:
       - activity-db
       - consul
       - rabbitmq
+
+  gateway-service:
+    build:
+      context: ./gateway-service
+      dockerfile: Dockerfile
+    env_file:
+      - ./gateway-service/.env
+    ports:
+      - "50057:50057"
+    depends_on:
+      - consul
+
+  consul:
+    image: consul:1.14
+    container_name: consul
+    ports:
+      - "8500:8500"
+    command: "agent -dev -client=0.0.0.0"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+      
 
   user-db:
     image: postgres:latest

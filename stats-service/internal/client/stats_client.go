@@ -16,7 +16,7 @@ func NewStatsClient(cc *grpc.ClientConn) *StatsClient {
 }
 
 func (r *StatsClient) GetAllInvoices(ctx context.Context) ([]*invoicepb.Invoice, error) {
-	req := &invoicepb.ListInvoicesRequest{}
+	req := &invoicepb.ListInvoicesRequest{UserId: 1}
 	resp, err := r.invoiceClient.ListInvoices(ctx, req)
 	if err != nil {
 		return nil, err
