@@ -9,11 +9,11 @@ import (
 	userpb "github.com/emzola/numer/user-service/proto"
 )
 
-func (h *Handler) CreateCustomer(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) CreateCustomerHandler(w http.ResponseWriter, r *http.Request) {
 	// Extract user from context
 	user := h.contextGetUser(r)
 
-	// Step 1: Decode the JSON body into the HTTP request struct
+	// Decode the JSON body into the HTTP request struct
 	var httpReq CreateCustomerHTTPReq
 	err := h.decodeJSON(w, r, &httpReq)
 	if err != nil {
@@ -21,7 +21,7 @@ func (h *Handler) CreateCustomer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Step 2: Convert the HTTP request into the gRPC CreateUserRequest
+	// Convert the HTTP request into the gRPC CreateUserRequest
 	grpcReq := &userpb.CreateCustomerRequest{
 		UserId:  user.Id,
 		Name:    httpReq.Name,
@@ -32,7 +32,7 @@ func (h *Handler) CreateCustomer(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
 
-	// Step 3: Create gRPC connection to user service
+	// Create gRPC connection to user service
 	conn, err := grpcutil.ServiceConnection(ctx, "user-service", h.registry)
 	if err != nil {
 		h.serverErrorResponse(w, r, err)
@@ -47,7 +47,7 @@ func (h *Handler) CreateCustomer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Step 4: Map the gRPC CustomerResponse back to the HTTP response
+	// Map the gRPC CustomerResponse back to the HTTP response
 	cusResp := CustomerHTTPResp{
 		ID:      grpcRes.Customer.Id,
 		UserId:  grpcRes.Customer.UserId,
@@ -62,14 +62,14 @@ func (h *Handler) CreateCustomer(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) GetCustomer(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetCustomerHandler(w http.ResponseWriter, r *http.Request) {
 	// Extract ID param
 	customerId, err := h.readIDParam(r)
 	if err != nil {
 		h.notFoundResponse(w, r)
 	}
 
-	// Step 1: Decode the JSON body into the HTTP request struct
+	// Decode the JSON body into the HTTP request struct
 	var httpReq GetCustomerHTTPReq
 	err = h.decodeJSON(w, r, &httpReq)
 	if err != nil {
@@ -77,7 +77,7 @@ func (h *Handler) GetCustomer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Step 2: Convert the HTTP request into the gRPC CreateUserRequest
+	// Convert the HTTP request into the gRPC CreateUserRequest
 	grpcReq := &userpb.GetCustomerRequest{
 		CustomerId: customerId,
 	}
@@ -85,7 +85,7 @@ func (h *Handler) GetCustomer(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
 
-	// Step 3: Create gRPC connection to user service
+	// Create gRPC connection to user service
 	conn, err := grpcutil.ServiceConnection(ctx, "user-service", h.registry)
 	if err != nil {
 		h.serverErrorResponse(w, r, err)
@@ -100,7 +100,7 @@ func (h *Handler) GetCustomer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Step 4: Map the gRPC CustomerResponse back to the HTTP response
+	// Map the gRPC CustomerResponse back to the HTTP response
 	cusResp := CustomerHTTPResp{
 		ID:      grpcRes.Customer.Id,
 		UserId:  grpcRes.Customer.UserId,
@@ -115,14 +115,14 @@ func (h *Handler) GetCustomer(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) UpdateCustomer(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) UpdateCustomerHandler(w http.ResponseWriter, r *http.Request) {
 	// Extract ID param
 	customerId, err := h.readIDParam(r)
 	if err != nil {
 		h.notFoundResponse(w, r)
 	}
 
-	// Step 1: Decode the JSON body into the HTTP request struct
+	// Decode the JSON body into the HTTP request struct
 	var httpReq UpdateCustomerHTTPReq
 	err = h.decodeJSON(w, r, &httpReq)
 	if err != nil {
@@ -130,7 +130,7 @@ func (h *Handler) UpdateCustomer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Step 2: Convert the HTTP request into the gRPC CreateUserRequest
+	// Convert the HTTP request into the gRPC CreateUserRequest
 	grpcReq := &userpb.UpdateCustomerRequest{
 		CustomerId: customerId,
 		Name:       httpReq.Name,
@@ -141,7 +141,7 @@ func (h *Handler) UpdateCustomer(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
 
-	// Step 3: Create gRPC connection to user service
+	// Create gRPC connection to user service
 	conn, err := grpcutil.ServiceConnection(ctx, "user-service", h.registry)
 	if err != nil {
 		h.serverErrorResponse(w, r, err)
@@ -156,7 +156,7 @@ func (h *Handler) UpdateCustomer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Step 4: Map the gRPC CustomerResponse back to the HTTP response
+	// Map the gRPC CustomerResponse back to the HTTP response
 	cusResp := CustomerHTTPResp{
 		ID:      grpcRes.Customer.Id,
 		UserId:  grpcRes.Customer.UserId,
@@ -171,14 +171,14 @@ func (h *Handler) UpdateCustomer(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) DeleteCustomer(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) DeleteCustomerHandler(w http.ResponseWriter, r *http.Request) {
 	// Extract ID param
 	customerId, err := h.readIDParam(r)
 	if err != nil {
 		h.notFoundResponse(w, r)
 	}
 
-	// Step 1: Decode the JSON body into the HTTP request struct
+	// Decode the JSON body into the HTTP request struct
 	var httpReq DeleteCustomerHTTPReq
 	err = h.decodeJSON(w, r, &httpReq)
 	if err != nil {
@@ -186,7 +186,7 @@ func (h *Handler) DeleteCustomer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Step 2: Convert the HTTP request into the gRPC CreateUserRequest
+	// Convert the HTTP request into the gRPC CreateUserRequest
 	grpcReq := &userpb.DeleteCustomerRequest{
 		CustomerId: customerId,
 	}
@@ -194,7 +194,7 @@ func (h *Handler) DeleteCustomer(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
 
-	// Step 3: Create gRPC connection to user service
+	// Create gRPC connection to user service
 	conn, err := grpcutil.ServiceConnection(ctx, "user-service", h.registry)
 	if err != nil {
 		h.serverErrorResponse(w, r, err)
@@ -209,7 +209,7 @@ func (h *Handler) DeleteCustomer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Step 4: Map the gRPC CustomerResponse back to the HTTP response
+	// Map the gRPC CustomerResponse back to the HTTP response
 	cusResp := DeleteCustomerHTTPResp{
 		Message: grpcRes.Message,
 	}

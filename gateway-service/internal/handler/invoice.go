@@ -10,11 +10,11 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (h *Handler) CreateInvoice(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) CreateInvoiceHandler(w http.ResponseWriter, r *http.Request) {
 	// Extract user from context
 	user := h.contextGetUser(r)
 
-	// Step 1: Decode the JSON body into HTTP Request struct
+	// Decode the JSON body into HTTP Request struct
 	var httpReq CreateInvoiceHTTPReq
 	err := h.decodeJSON(w, r, &httpReq)
 	if err != nil {
@@ -22,11 +22,11 @@ func (h *Handler) CreateInvoice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Step 2: Convert time.Time to protobuf Timestamp
+	// Convert time.Time to protobuf Timestamp
 	issueDateProto := timestamppb.New(httpReq.IssueDate)
 	dueDateProto := timestamppb.New(httpReq.DueDate)
 
-	// Step 3: Convert the HTTP request into the gRPC CreateInvoiceRequest
+	// Convert the HTTP request into the gRPC CreateInvoiceRequest
 	grpcReq := &invoicepb.CreateInvoiceRequest{
 		UserId:             user.Id,
 		CustomerId:         httpReq.CustomerID,
@@ -41,7 +41,7 @@ func (h *Handler) CreateInvoice(w http.ResponseWriter, r *http.Request) {
 		Note:               httpReq.Note,
 	}
 
-	// Step 4: Map Invoice items from HTTP request to gRPC request with []*InvoiceItem
+	// Map Invoice items from HTTP request to gRPC request with []*InvoiceItem
 	for _, item := range httpReq.Items {
 		grpcReq.Items = append(grpcReq.Items, &invoicepb.InvoiceItem{
 			Description: item.Description,
@@ -53,7 +53,7 @@ func (h *Handler) CreateInvoice(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
 
-	// Step 5: Create gRPC connection to invoice service
+	// Create gRPC connection to invoice service
 	conn, err := grpcutil.ServiceConnection(ctx, "invoice-service", h.registry)
 	if err != nil {
 		h.serverErrorResponse(w, r, err)
@@ -68,7 +68,7 @@ func (h *Handler) CreateInvoice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Step 6: Map the gRPC CreateInvoiceResponse back to the HTTP response
+	// Map the gRPC CreateInvoiceResponse back to the HTTP response
 	invoiceResp := CreateInvoiceHTTPResp{
 		InvoiceID: grpcRes.InvoiceId,
 	}
@@ -79,7 +79,7 @@ func (h *Handler) CreateInvoice(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) GetInvoice(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetInvoiceHandler(w http.ResponseWriter, r *http.Request) {
 	// Extract ID param
 	invoiceId, err := h.readIDParam(r)
 	if err != nil {
@@ -127,14 +127,14 @@ func (h *Handler) GetInvoice(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) UpdateInvoice(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) UpdateInvoiceHandler(w http.ResponseWriter, r *http.Request) {
 	// Extract invoice ID param
 	invoiceId, err := h.readIDParam(r)
 	if err != nil {
 		h.notFoundResponse(w, r)
 	}
 
-	// Step 1: Decode the JSON body into the HTTP request struct
+	// Decode the JSON body into the HTTP request struct
 	var httpReq UpdateInvoiceHTTPReq
 	err = h.decodeJSON(w, r, &httpReq)
 	if err != nil {
@@ -142,11 +142,11 @@ func (h *Handler) UpdateInvoice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Step 2: Convert time.Time to protobuf Timestamp
+	// Convert time.Time to protobuf Timestamp
 	issueDateProto := timestamppb.New(httpReq.IssueDate)
 	dueDateProto := timestamppb.New(httpReq.DueDate)
 
-	// Step 3: Convert the HTTP request into the gRPC UpdateInvoiceRequest
+	// Convert the HTTP request into the gRPC UpdateInvoiceRequest
 	grpcReq := &invoicepb.UpdateInvoiceRequest{
 		InvoiceId:          invoiceId,
 		Status:             httpReq.Status,
@@ -161,7 +161,7 @@ func (h *Handler) UpdateInvoice(w http.ResponseWriter, r *http.Request) {
 		Note:               httpReq.Note,
 	}
 
-	// Step 4: Map Invoice items from HTTP request to gRPC request with []*InvoiceItem
+	// Map Invoice items from HTTP request to gRPC request with []*InvoiceItem
 	for _, item := range httpReq.Items {
 		grpcReq.Items = append(grpcReq.Items, &invoicepb.InvoiceItem{
 			Description: item.Description,
@@ -188,7 +188,7 @@ func (h *Handler) UpdateInvoice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Step 5: Map the gRPC UpdateInvoiceResponse back to the HTTP response
+	// Map the gRPC UpdateInvoiceResponse back to the HTTP response
 	updateInvResp := UpdateInvoiceHTTPResp{
 		InvoiceID: grpcRes.InvoiceId,
 		Message:   grpcRes.Message,
@@ -200,11 +200,11 @@ func (h *Handler) UpdateInvoice(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) GetInvoices(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetInvoicesHandler(w http.ResponseWriter, r *http.Request) {
 	// Extract user from context
 	user := h.contextGetUser(r)
 
-	// Step 1: Decode the JSON body into the HTTP request struct
+	// Decode the JSON body into the HTTP request struct
 	var httpReq GetInvoicesHTTPReq
 	err := h.decodeJSON(w, r, &httpReq)
 	if err != nil {
@@ -212,7 +212,7 @@ func (h *Handler) GetInvoices(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Step 2: Convert the HTTP request into the gRPC ListInvoicesRequest
+	// Convert the HTTP request into the gRPC ListInvoicesRequest
 	grpcReq := &invoicepb.ListInvoicesRequest{
 		UserId:    user.Id,
 		PageSize:  httpReq.PageSize,
@@ -222,7 +222,7 @@ func (h *Handler) GetInvoices(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
 
-	// Step 3: Create gRPC connection to invoice service
+	// Create gRPC connection to invoice service
 	conn, err := grpcutil.ServiceConnection(ctx, "invoice-service", h.registry)
 	if err != nil {
 		h.serverErrorResponse(w, r, err)
@@ -237,7 +237,7 @@ func (h *Handler) GetInvoices(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Step 5: Map the gRPC ListInvoicesResponse back to the HTTP response
+	// Map the gRPC ListInvoicesResponse back to the HTTP response
 	invoiceResp := GetInvoicesHTTPResp{
 		Invoices:      convertInvoices(grpcRes.Invoices),
 		NextPageToken: grpcRes.NextPageToken,
@@ -249,7 +249,7 @@ func (h *Handler) GetInvoices(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Struct to capture the HTTP request JSON data (matching the gRPC CreateInvoiceRequest)
+// Struct to capture the HTTP request JSON data
 type CreateInvoiceHTTPReq struct {
 	CustomerID         int64         `json:"customer_id"`
 	IssueDate          time.Time     `json:"issue_date"`
@@ -276,7 +276,7 @@ type CreateInvoiceHTTPResp struct {
 	InvoiceID int64 `json:"invoice_id"`
 }
 
-// Struct to capture the HTTP response (based on GetInvoiceResponse)
+// Struct to capture the HTTP response
 type GetInvoiceHTTPResp struct {
 	InvoiceID          int64         `json:"invoice_id"`
 	UserID             int64         `json:"user_id"`
@@ -293,7 +293,7 @@ type GetInvoiceHTTPResp struct {
 	Note               string        `json:"note"`
 }
 
-// Struct to capture the HTTP request JSON data (matching the gRPC UpdateInvoiceRequest)
+// Struct to capture the HTTP request JSON data
 type UpdateInvoiceHTTPReq struct {
 	Status             string        `json:"status"`
 	IssueDate          time.Time     `json:"issue_date"`
@@ -308,7 +308,7 @@ type UpdateInvoiceHTTPReq struct {
 	Note               string        `json:"note"`
 }
 
-// Struct to capture the HTTP response (based on UpdateInvoiceResponse)
+// Struct to capture the HTTP response
 type UpdateInvoiceHTTPResp struct {
 	InvoiceID int64  `json:"invoice_id"`
 	Message   string `json:"message"`
