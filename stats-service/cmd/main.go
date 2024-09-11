@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/emzola/numer/stats-service/config"
-	"github.com/emzola/numer/stats-service/internal/client"
 	"github.com/emzola/numer/stats-service/internal/grpcutil"
 	"github.com/emzola/numer/stats-service/internal/handler"
 	"github.com/emzola/numer/stats-service/internal/service"
@@ -65,9 +64,9 @@ func main() {
 	}
 	defer invoiceConn.Close()
 
-	// Initialize client, service and server
-	invoiceStatsClient := client.NewStatsClient(invoiceConn)
-	svc := service.NewStatsService(invoiceStatsClient)
+	svc := service.NewStatsService(invoiceConn)
+
+	// Initialize handler
 	handler := handler.NewStatsHandler(svc)
 
 	grpcServer := grpc.NewServer()

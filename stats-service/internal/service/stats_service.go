@@ -5,25 +5,32 @@ import (
 
 	invoicepb "github.com/emzola/numer/invoice-service/proto"
 	"github.com/emzola/numer/stats-service/internal/models"
+	"google.golang.org/grpc"
 )
 
-type statsClient interface {
-	GetAllInvoices(ctx context.Context) ([]*invoicepb.Invoice, error)
-}
+// type statsClient interface {
+// 	GetAllInvoices(ctx context.Context) ([]*invoicepb.Invoice, error)
+// }
 
 type StatsService struct {
-	invoiceStatsClient statsClient
+	conn *grpc.ClientConn
 }
 
-func NewStatsService(invoiceStatsClient statsClient) *StatsService {
-	return &StatsService{invoiceStatsClient: invoiceStatsClient}
+func NewStatsService(conn *grpc.ClientConn) *StatsService {
+	return &StatsService{conn: conn}
 }
 
-func (s *StatsService) GetStats(ctx context.Context) (*models.Stats, error) {
-	invoices, err := s.invoiceStatsClient.GetAllInvoices(ctx)
+func (s *StatsService) GetStats(ctx context.Context, userId int64) (*models.Stats, error) {
+	grpcReq := &invoicepb.ListInvoicesRequest{
+		UserId: userId,
+	}
+	client := invoicepb.NewInvoiceServiceClient(s.conn)
+	response, err := client.ListInvoices(ctx, grpcReq)
 	if err != nil {
 		return nil, err
 	}
+
+	invoices := response.Invoices
 
 	var totalPaid, totalOverdue, totalDraft, totalUnpaid int64
 	var totalAmountPaid, totalAmountOverdue, totalAmountDraft, totalAmountUnpaid int64

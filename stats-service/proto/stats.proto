@@ -6,7 +6,9 @@ service StatsService {
   rpc GetStats (GetStatsRequest) returns (GetStatsResponse);
 }
 
-message GetStatsRequest {}
+message GetStatsRequest {
+  int64 user_id = 1;
+}
 
 message GetStatsResponse {
   int64 total_invoices = 1;
