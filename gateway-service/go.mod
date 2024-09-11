@@ -3,9 +3,10 @@ module github.com/emzola/numer/gateway-service
 go 1.22.0
 
 require (
-	github.com/emzola/numer/invoice-service v0.0.0-20240911104756-0f431372a5fa
-	github.com/emzola/numer/stats-service v0.0.0-20240911163515-bf4f17e7799b
-	github.com/emzola/numer/user-service v0.0.0-20240911104756-0f431372a5fa
+	github.com/emzola/numer/activity-service v0.0.0-20240911173848-ffe845c13ed3
+	github.com/emzola/numer/invoice-service v0.0.0-20240911173848-ffe845c13ed3
+	github.com/emzola/numer/stats-service v0.0.0-20240911173848-ffe845c13ed3
+	github.com/emzola/numer/user-service v0.0.0-20240911173848-ffe845c13ed3
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/hashicorp/consul/api v1.29.4
 	github.com/julienschmidt/httprouter v1.3.0
@@ -30,7 +31,7 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
 	golang.org/x/net v0.28.0 // indirect
-	golang.org/x/sys v0.24.0 // indirect
-	golang.org/x/text v0.17.0 // indirect
+	golang.org/x/sys v0.25.0 // indirect
+	golang.org/x/text v0.18.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240827150818-7e3bb234dfed // indirect
 )
