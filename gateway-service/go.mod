@@ -3,8 +3,9 @@ module github.com/emzola/numer/gateway-service
 go 1.22.0
 
 require (
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/emzola/numer/invoice-service v0.0.0-20240911014850-ab230fcce9ed
+	github.com/emzola/numer/user-service v0.0.0-20240911092756-6da1d07013ff
+	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/hashicorp/consul/api v1.29.4
 	github.com/julienschmidt/httprouter v1.3.0
 	google.golang.org/grpc v1.66.0
@@ -25,7 +26,7 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
-	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63 // indirect
+	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
 	golang.org/x/net v0.28.0 // indirect
 	golang.org/x/sys v0.24.0 // indirect
 	golang.org/x/text v0.17.0 // indirect
