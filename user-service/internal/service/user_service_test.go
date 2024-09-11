@@ -1,199 +1,232 @@
 package service_test
 
-// import (
-// 	"context"
-// 	"testing"
+import (
+	"context"
+	"testing"
 
-// 	"github.com/emzola/numer/user-service/internal/models"
-// 	"github.com/emzola/numer/user-service/internal/service"
+	"github.com/emzola/numer/user-service/internal/models"
+	"github.com/emzola/numer/user-service/internal/service"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
+	"golang.org/x/crypto/bcrypt"
+)
 
-// 	"github.com/stretchr/testify/assert"
-// 	"github.com/stretchr/testify/mock"
-// )
+// Mock the repository
+type MockUserRepository struct {
+	mock.Mock
+}
 
-// // Mock repository
-// type mockUserRepo struct {
-// 	mock.Mock
-// }
+func (m *MockUserRepository) CreateUser(ctx context.Context, email, password, role string) (*models.User, error) {
+	args := m.Called(ctx, email, password, role)
+	return args.Get(0).(*models.User), args.Error(1)
+}
 
-// func (m *mockUserRepo) CreateUser(ctx context.Context, email, password, role string) (models.User, error) {
-// 	args := m.Called(ctx, email, password, role)
-// 	return args.Get(0).(models.User), args.Error(1)
-// }
+func (m *MockUserRepository) GetUserByID(ctx context.Context, userID int64) (*models.User, error) {
+	args := m.Called(ctx, userID)
+	return args.Get(0).(*models.User), args.Error(1)
+}
 
-// func (m *mockUserRepo) GetUserByID(ctx context.Context, userID int64) (models.User, error) {
-// 	args := m.Called(ctx, userID)
-// 	return args.Get(0).(models.User), args.Error(1)
-// }
+func (m *MockUserRepository) UpdateUser(ctx context.Context, user *models.User) error {
+	args := m.Called(ctx, user)
+	return args.Error(0)
+}
 
-// func (m *mockUserRepo) UpdateUser(ctx context.Context, user models.User) error {
-// 	return m.Called(ctx, user).Error(0)
-// }
+func (m *MockUserRepository) DeleteUser(ctx context.Context, userID int64) error {
+	args := m.Called(ctx, userID)
+	return args.Error(0)
+}
 
-// func (m *mockUserRepo) DeleteUser(ctx context.Context, userID int64) error {
-// 	return m.Called(ctx, userID).Error(0)
-// }
+func (m *MockUserRepository) CreateCustomer(ctx context.Context, customer *models.Customer) (*models.Customer, error) {
+	args := m.Called(ctx, customer)
+	return args.Get(0).(*models.Customer), args.Error(1)
+}
 
-// func (m *mockUserRepo) CreateCustomer(ctx context.Context, customer models.Customer) (models.Customer, error) {
-// 	args := m.Called(ctx, customer)
-// 	return args.Get(0).(models.Customer), args.Error(1)
-// }
+func (m *MockUserRepository) GetCustomerByID(ctx context.Context, customerID int64) (*models.Customer, error) {
+	args := m.Called(ctx, customerID)
+	return args.Get(0).(*models.Customer), args.Error(1)
+}
 
-// func (m *mockUserRepo) GetCustomerByID(ctx context.Context, customerID int64) (models.Customer, error) {
-// 	args := m.Called(ctx, customerID)
-// 	return args.Get(0).(models.Customer), args.Error(1)
-// }
+func (m *MockUserRepository) UpdateCustomer(ctx context.Context, customer *models.Customer) error {
+	args := m.Called(ctx, customer)
+	return args.Error(0)
+}
 
-// func (m *mockUserRepo) UpdateCustomer(ctx context.Context, customer models.Customer) error {
-// 	return m.Called(ctx, customer).Error(0)
-// }
+func (m *MockUserRepository) DeleteCustomer(ctx context.Context, customerID int64) error {
+	args := m.Called(ctx, customerID)
+	return args.Error(0)
+}
 
-// func (m *mockUserRepo) DeleteCustomer(ctx context.Context, customerID int64) error {
-// 	return m.Called(ctx, customerID).Error(0)
-// }
+// Unit tests for the UserService
 
-// func TestUserService_CreateUser(t *testing.T) {
-// 	mockRepo := new(mockUserRepo)
-// 	svc := service.NewUserService(mockRepo)
+func TestCreateUser(t *testing.T) {
+	mockRepo := new(MockUserRepository)
+	userService := service.NewUserService(mockRepo)
 
-// 	user := models.User{
-// 		ID:    1,
-// 		Email: "test@example.com",
-// 		Role:  "admin",
-// 	}
+	email := "test@example.com"
+	password := "password123"
+	role := "user"
 
-// 	mockRepo.On("CreateUser", mock.Anything, user.Email, mock.Anything, user.Role).Return(user, nil)
+	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	expectedUser := &models.User{
+		ID:             1,
+		Email:          email,
+		HashedPassword: string(hashedPassword),
+		Role:           role,
+	}
 
-// 	result, err := svc.CreateUser(context.Background(), user.Email, "password123", user.Role)
+	// Mock the repository response
+	mockRepo.On("CreateUser", mock.Anything, email, mock.AnythingOfType("string"), role).Return(expectedUser, nil)
 
-// 	assert.NoError(t, err)
-// 	assert.Equal(t, user.ID, result.ID)
-// 	assert.Equal(t, user.Email, result.Email)
-// 	mockRepo.AssertExpectations(t)
-// }
+	// Call the CreateUser method
+	user, err := userService.CreateUser(context.Background(), email, password, role)
 
-// func TestUserService_GetUserByID(t *testing.T) {
-// 	mockRepo := new(mockUserRepo)
-// 	svc := service.NewUserService(mockRepo)
+	// Assertions
+	require.NoError(t, err)
+	require.Equal(t, expectedUser, user)
+	mockRepo.AssertExpectations(t)
+}
 
-// 	user := models.User{
-// 		ID:    1,
-// 		Email: "test@example.com",
-// 		Role:  "admin",
-// 	}
+func TestGetUserByID(t *testing.T) {
+	mockRepo := new(MockUserRepository)
+	userService := service.NewUserService(mockRepo)
 
-// 	mockRepo.On("GetUserByID", mock.Anything, user.ID).Return(user, nil)
+	userID := int64(1)
+	expectedUser := &models.User{
+		ID:    userID,
+		Email: "test@example.com",
+		Role:  "user",
+	}
 
-// 	result, err := svc.GetUserByID(context.Background(), user.ID)
+	// Mock the repository response
+	mockRepo.On("GetUserByID", mock.Anything, userID).Return(expectedUser, nil)
 
-// 	assert.NoError(t, err)
-// 	assert.Equal(t, user.ID, result.ID)
-// 	assert.Equal(t, user.Email, result.Email)
-// 	mockRepo.AssertExpectations(t)
-// }
+	// Call the GetUserByID method
+	user, err := userService.GetUserByID(context.Background(), userID)
 
-// func TestUserService_UpdateUser(t *testing.T) {
-// 	mockRepo := new(mockUserRepo)
-// 	svc := service.NewUserService(mockRepo)
+	// Assertions
+	require.NoError(t, err)
+	require.Equal(t, expectedUser, user)
+	mockRepo.AssertExpectations(t)
+}
 
-// 	user := models.User{
-// 		ID:    1,
-// 		Email: "updated@example.com",
-// 		Role:  "admin",
-// 	}
+func TestUpdateUser(t *testing.T) {
+	mockRepo := new(MockUserRepository)
+	userService := service.NewUserService(mockRepo)
 
-// 	mockRepo.On("UpdateUser", mock.Anything, user).Return(nil)
+	updatedUser := &models.User{
+		ID:             1,
+		Email:          "updated@example.com",
+		HashedPassword: "newpassword",
+		Role:           "admin",
+	}
 
-// 	err := svc.UpdateUser(context.Background(), user)
+	// Mock the repository response
+	mockRepo.On("UpdateUser", mock.Anything, updatedUser).Return(nil)
 
-// 	assert.NoError(t, err)
-// 	mockRepo.AssertExpectations(t)
-// }
+	// Call the UpdateUser method
+	err := userService.UpdateUser(context.Background(), updatedUser)
 
-// func TestUserService_DeleteUser(t *testing.T) {
-// 	mockRepo := new(mockUserRepo)
-// 	svc := service.NewUserService(mockRepo)
+	// Assertions
+	require.NoError(t, err)
+	mockRepo.AssertExpectations(t)
+}
 
-// 	userID := int64(1)
+func TestDeleteUser(t *testing.T) {
+	mockRepo := new(MockUserRepository)
+	userService := service.NewUserService(mockRepo)
 
-// 	mockRepo.On("DeleteUser", mock.Anything, userID).Return(nil)
+	userID := int64(1)
 
-// 	err := svc.DeleteUser(context.Background(), userID)
+	// Mock the repository response
+	mockRepo.On("DeleteUser", mock.Anything, userID).Return(nil)
 
-// 	assert.NoError(t, err)
-// 	mockRepo.AssertExpectations(t)
-// }
+	// Call the DeleteUser method
+	err := userService.DeleteUser(context.Background(), userID)
 
-// func TestUserService_CreateCustomer(t *testing.T) {
-// 	mockRepo := new(mockUserRepo)
-// 	svc := service.NewUserService(mockRepo)
+	// Assertions
+	require.NoError(t, err)
+	mockRepo.AssertExpectations(t)
+}
 
-// 	customer := models.Customer{
-// 		ID:     1,
-// 		UserID: 1,
-// 		Name:   "Customer A",
-// 		Email:  "customer@example.com",
-// 	}
+func TestCreateCustomer(t *testing.T) {
+	mockRepo := new(MockUserRepository)
+	userService := service.NewUserService(mockRepo)
 
-// 	mockRepo.On("CreateCustomer", mock.Anything, customer).Return(customer, nil)
+	customer := &models.Customer{
+		ID:    1,
+		Name:  "Customer Name",
+		Email: "customer@example.com",
+	}
 
-// 	result, err := svc.CreateCustomer(context.Background(), customer)
+	// Mock the repository response
+	mockRepo.On("CreateCustomer", mock.Anything, customer).Return(customer, nil)
 
-// 	assert.NoError(t, err)
-// 	assert.Equal(t, customer.ID, result.ID)
-// 	assert.Equal(t, customer.Email, result.Email)
-// 	mockRepo.AssertExpectations(t)
-// }
+	// Call the CreateCustomer method
+	createdCustomer, err := userService.CreateCustomer(context.Background(), customer)
 
-// func TestUserService_GetCustomerByID(t *testing.T) {
-// 	mockRepo := new(mockUserRepo)
-// 	svc := service.NewUserService(mockRepo)
+	// Assertions
+	require.NoError(t, err)
+	require.Equal(t, customer, createdCustomer)
+	mockRepo.AssertExpectations(t)
+}
 
-// 	customer := models.Customer{
-// 		ID:     1,
-// 		UserID: 1,
-// 		Name:   "Customer A",
-// 		Email:  "customer@example.com",
-// 	}
+func TestGetCustomerByID(t *testing.T) {
+	mockRepo := new(MockUserRepository)
+	userService := service.NewUserService(mockRepo)
 
-// 	mockRepo.On("GetCustomerByID", mock.Anything, customer.ID).Return(customer, nil)
+	customerID := int64(1)
+	expectedCustomer := &models.Customer{
+		ID:    customerID,
+		Name:  "Customer Name",
+		Email: "customer@example.com",
+	}
 
-// 	result, err := svc.GetCustomerByID(context.Background(), customer.ID)
+	// Mock the repository response
+	mockRepo.On("GetCustomerByID", mock.Anything, customerID).Return(expectedCustomer, nil)
 
-// 	assert.NoError(t, err)
-// 	assert.Equal(t, customer.ID, result.ID)
-// 	assert.Equal(t, customer.Email, result.Email)
-// 	mockRepo.AssertExpectations(t)
-// }
+	// Call the GetCustomerByID method
+	customer, err := userService.GetCustomerByID(context.Background(), customerID)
 
-// func TestUserService_UpdateCustomer(t *testing.T) {
-// 	mockRepo := new(mockUserRepo)
-// 	svc := service.NewUserService(mockRepo)
+	// Assertions
+	require.NoError(t, err)
+	require.Equal(t, expectedCustomer, customer)
+	mockRepo.AssertExpectations(t)
+}
 
-// 	customer := models.Customer{
-// 		ID:    1,
-// 		Name:  "Updated Customer",
-// 		Email: "updated@example.com",
-// 	}
+func TestUpdateCustomer(t *testing.T) {
+	mockRepo := new(MockUserRepository)
+	userService := service.NewUserService(mockRepo)
 
-// 	mockRepo.On("UpdateCustomer", mock.Anything, customer).Return(nil)
+	updatedCustomer := &models.Customer{
+		ID:    1,
+		Name:  "Updated Customer",
+		Email: "updated@example.com",
+	}
 
-// 	err := svc.UpdateCustomer(context.Background(), customer)
+	// Mock the repository response
+	mockRepo.On("UpdateCustomer", mock.Anything, updatedCustomer).Return(nil)
 
-// 	assert.NoError(t, err)
-// 	mockRepo.AssertExpectations(t)
-// }
+	// Call the UpdateCustomer method
+	err := userService.UpdateCustomer(context.Background(), updatedCustomer)
 
-// func TestUserService_DeleteCustomer(t *testing.T) {
-// 	mockRepo := new(mockUserRepo)
-// 	svc := service.NewUserService(mockRepo)
+	// Assertions
+	require.NoError(t, err)
+	mockRepo.AssertExpectations(t)
+}
 
-// 	customerID := int64(1)
+func TestDeleteCustomer(t *testing.T) {
+	mockRepo := new(MockUserRepository)
+	userService := service.NewUserService(mockRepo)
 
-// 	mockRepo.On("DeleteCustomer", mock.Anything, customerID).Return(nil)
+	customerID := int64(1)
 
-// 	err := svc.DeleteCustomer(context.Background(), customerID)
+	// Mock the repository response
+	mockRepo.On("DeleteCustomer", mock.Anything, customerID).Return(nil)
 
-// 	assert.NoError(t, err)
-// 	mockRepo.AssertExpectations(t)
-// }
+	// Call the DeleteCustomer method
+	err := userService.DeleteCustomer(context.Background(), customerID)
+
+	// Assertions
+	require.NoError(t, err)
+	mockRepo.AssertExpectations(t)
+}

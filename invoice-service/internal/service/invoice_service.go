@@ -107,7 +107,7 @@ func ConvertCentsToDecimal(cents int64) decimal.Decimal {
 
 // ConvertPercentageToDecimal converts an int64 percentage (in hundredths) to decimal.Decimal.
 func ConvertPercentageToDecimal(percentage int64) decimal.Decimal {
-	return decimal.NewFromInt(percentage).Div(decimal.NewFromInt(100))
+	return decimal.NewFromInt(percentage).Div(decimal.NewFromInt(10000))
 }
 
 // calculateInvoiceValues calculates the subtotal, discount, and total of invoice items.
