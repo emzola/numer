@@ -7,13 +7,23 @@ service UserService {
     rpc CreateUser(CreateUserRequest) returns (UserResponse);
     rpc GetUser(GetUserRequest) returns (UserResponse);
     rpc UpdateUser(UpdateUserRequest) returns (UserResponse);
-    rpc DeleteUser(DeleteUserRequest) returns (Empty);
+    rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse);
 
     // Customer endpoints
     rpc CreateCustomer(CreateCustomerRequest) returns (CustomerResponse);
     rpc GetCustomer(GetCustomerRequest) returns (CustomerResponse);
     rpc UpdateCustomer(UpdateCustomerRequest) returns (CustomerResponse);
-    rpc DeleteCustomer(DeleteCustomerRequest) returns (Empty);
+    rpc DeleteCustomer(DeleteCustomerRequest) returns (DeleteCustomerResponse);
+}
+
+message User {
+    int64 id = 1;
+    string email = 2;
+    string role = 3;
+}
+
+message UserResponse {
+    User user = 1;
 }
 
 message CreateUserRequest {
@@ -37,13 +47,23 @@ message DeleteUserRequest {
     int64 user_id = 1;
 }
 
-message UserResponse {
-    int64 id = 1;
-    string email = 2;
-    string role = 3;
+message DeleteUserResponse {
+    string message = 1;
 }
 
 // Customer messages
+message Customer {
+    int64 id = 1;
+    int64 user_id = 2;
+    string name = 3;
+    string email = 4;
+    string address = 5;
+}
+
+message CustomerResponse {
+    Customer customer = 1;
+}
+
 message CreateCustomerRequest {
     int64 user_id = 1;
     string name = 2;
@@ -66,12 +86,7 @@ message DeleteCustomerRequest {
     int64 customer_id = 1;
 }
 
-message CustomerResponse {
-    int64 id = 1;
-    int64 user_id = 2;
-    string name = 3;
-    string email = 4;
-    string address = 5;
+message DeleteCustomerResponse {
+    string message = 1;
 }
 
-message Empty {}

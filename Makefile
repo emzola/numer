@@ -10,7 +10,6 @@ STATS_PROTO := stats-service/$(PROTO_DIR)/stats.proto
 NOTIFICATION_PROTO := notification-service/$(PROTO_DIR)/notification.proto
 REMINDERS_PROTO := reminders-service/$(PROTO_DIR)/reminders.proto
 ACTIVITY_PROTO := activity-service/$(PROTO_DIR)/activity.proto
-GATEWAY_PROTO := gateway-service/$(PROTO_DIR)/gateway.proto
 
 USER_OUT_DIR := user-service/$(PROTO_DIR)
 INVOICE_OUT_DIR := invoice-service/$(PROTO_DIR)
@@ -18,7 +17,6 @@ STATS_OUT_DIR := stats-service/$(PROTO_DIR)
 NOTIFICATION_OUT_DIR := notification-service/$(PROTO_DIR)
 REMINDERS_OUT_DIR := reminders-service/$(PROTO_DIR)
 ACTIVITY_OUT_DIR := activity-service/$(PROTO_DIR)
-GATEWAY_OUT_DIR := gateway-service/$(PROTO_DIR)
 
 # Check if output directories exist, if not create them
 .PHONY: create_dirs
@@ -29,7 +27,6 @@ create_dirs:
 	@mkdir -p $(NOTIFICATION_OUT_DIR)
 	@mkdir -p $(REMINDERS_OUT_DIR)
 	@mkdir -p $(ACTIVITY_OUT_DIR)
-	@mkdir -p $(GATEWAY_OUT_DIR)
 
 # Define the protoc command
 PROTOC := protoc
@@ -38,7 +35,7 @@ PROTOC_GEN_GRPC_GO := protoc-gen-go-grpc
 
 # Generate the protobuf files
 .PHONY: proto
-proto: create_dirs user_proto invoice_proto stats_proto notification_proto reminders_proto activity_proto gateway_proto
+proto: create_dirs user_proto invoice_proto stats_proto notification_proto reminders_proto activity_proto 
 
 user_proto: $(USER_PROTO)
 	$(PROTOC) --go_out=. --go-grpc_out=. $(USER_PROTO)
@@ -57,9 +54,6 @@ reminders_proto: $(REMINDERS_PROTO)
 
 activity_proto: $(ACTIVITY_PROTO)
 	$(PROTOC) --go_out=. --go-grpc_out=. $(ACTIVITY_PROTO)
-
-gateway_proto: $(ACTIVITY_PROTO)
-	$(PROTOC) --go_out=. --go-grpc_out=. $(GATEWAY_PROTO)
 	
 # Clean the generated files
 .PHONY: cleanproto
@@ -70,7 +64,6 @@ cleanproto:
 	rm -f $(NOTIFICATION_OUT_DIR)/*.pb.go
 	rm -f $(REMINDERS_OUT_DIR)/*.pb.go
 	rm -f $(ACTIVITY_OUT_DIR)/*.pb.go
-	rm -f $(GATEWAY_OUT_DIR)/*.pb.go
 
 # ==================================================================================== #
 # DEVELOPMENT

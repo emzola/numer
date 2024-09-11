@@ -24,11 +24,7 @@ func (h *UserHandler) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 		return nil, err
 	}
 
-	return &pb.UserResponse{
-		Id:    user.ID,
-		Email: user.Email,
-		Role:  user.Role,
-	}, nil
+	return &pb.UserResponse{User: models.ConvertUserToProto(user)}, nil
 }
 
 func (h *UserHandler) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.UserResponse, error) {
@@ -37,11 +33,7 @@ func (h *UserHandler) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.
 		return nil, err
 	}
 
-	return &pb.UserResponse{
-		Id:    user.ID,
-		Email: user.Email,
-		Role:  user.Role,
-	}, nil
+	return &pb.UserResponse{User: models.ConvertUserToProto(user)}, nil
 }
 
 func (h *UserHandler) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb.UserResponse, error) {
@@ -60,19 +52,15 @@ func (h *UserHandler) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest)
 		return nil, err
 	}
 
-	return &pb.UserResponse{
-		Id:    user.ID,
-		Email: user.Email,
-		Role:  user.Role,
-	}, nil
+	return &pb.UserResponse{User: models.ConvertUserToProto(user)}, nil
 }
 
-func (h *UserHandler) DeleteUser(ctx context.Context, req *pb.DeleteUserRequest) (*pb.Empty, error) {
+func (h *UserHandler) DeleteUser(ctx context.Context, req *pb.DeleteUserRequest) (*pb.DeleteUserResponse, error) {
 	err := h.userService.DeleteUser(ctx, req.UserId)
 	if err != nil {
 		return nil, err
 	}
-	return &pb.Empty{}, nil
+	return &pb.DeleteUserResponse{Message: "user successfully deleted"}, nil
 }
 
 // Customer Endpoints
@@ -89,13 +77,7 @@ func (h *UserHandler) CreateCustomer(ctx context.Context, req *pb.CreateCustomer
 		return nil, err
 	}
 
-	return &pb.CustomerResponse{
-		Id:      customer.ID,
-		UserId:  customer.UserID,
-		Name:    customer.Name,
-		Email:   customer.Email,
-		Address: customer.Address,
-	}, nil
+	return &pb.CustomerResponse{Customer: models.ConvertCustomerToProto(customer)}, nil
 }
 
 func (h *UserHandler) GetCustomer(ctx context.Context, req *pb.GetCustomerRequest) (*pb.CustomerResponse, error) {
@@ -104,13 +86,7 @@ func (h *UserHandler) GetCustomer(ctx context.Context, req *pb.GetCustomerReques
 		return nil, err
 	}
 
-	return &pb.CustomerResponse{
-		Id:      customer.ID,
-		UserId:  customer.UserID,
-		Name:    customer.Name,
-		Email:   customer.Email,
-		Address: customer.Address,
-	}, nil
+	return &pb.CustomerResponse{Customer: models.ConvertCustomerToProto(customer)}, nil
 }
 
 func (h *UserHandler) UpdateCustomer(ctx context.Context, req *pb.UpdateCustomerRequest) (*pb.CustomerResponse, error) {
@@ -126,20 +102,14 @@ func (h *UserHandler) UpdateCustomer(ctx context.Context, req *pb.UpdateCustomer
 		return nil, err
 	}
 
-	return &pb.CustomerResponse{
-		Id:      customer.ID,
-		UserId:  customer.UserID,
-		Name:    customer.Name,
-		Email:   customer.Email,
-		Address: customer.Address,
-	}, nil
+	return &pb.CustomerResponse{Customer: models.ConvertCustomerToProto(customer)}, nil
 }
 
-func (h *UserHandler) DeleteCustomer(ctx context.Context, req *pb.DeleteCustomerRequest) (*pb.Empty, error) {
+func (h *UserHandler) DeleteCustomer(ctx context.Context, req *pb.DeleteCustomerRequest) (*pb.DeleteCustomerResponse, error) {
 	err := h.userService.DeleteCustomer(ctx, req.CustomerId)
 	if err != nil {
 		return nil, err
 	}
 
-	return &pb.Empty{}, nil
+	return &pb.DeleteCustomerResponse{Message: "customer successfully deleted"}, nil
 }
