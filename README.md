@@ -2,7 +2,9 @@
 
 A microservices backend to support an invoice management system. Uses gRPC for inter-service communication while providing a RESTful API gateway for external clients to consume.
 
-## Summary: 
+## Overview: 
+
+### Go, PostgresQL, RabbitMQ, go-cron
 
 1. Internal Microservices (Communicates with other services using gRPC):
     - Invoice Service: 
@@ -43,7 +45,7 @@ git clone <repository-url>
 cd <repository-directory>
 ```
 
-### 2. Ensure .env Files Exist at the root of each service
+### 2. Ensure .env files exist at the root of each service
 
 ### 3. Build the Docker Images
 ```bash
@@ -55,7 +57,7 @@ make build
 make up
 ```
 
-### 5. make test
+### 5. Run tests
 ```bash
 make test
 ```
