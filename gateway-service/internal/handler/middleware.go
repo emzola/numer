@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-func AuthMiddleware(next http.Handler, userServiceConn *grpc.ClientConn) http.Handler {
+func (h *Handler) AuthMiddleware(next http.Handler, userServiceConn *grpc.ClientConn) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authorizationHeader := r.Header.Get("Authorization")
 		if authorizationHeader == "" {
@@ -23,7 +23,6 @@ func AuthMiddleware(next http.Handler, userServiceConn *grpc.ClientConn) http.Ha
 
 		// Parse JWT token
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-			// This is where you'd verify the signing method, key etc.
 			return []byte(os.Getenv("JWT_SECRET")), nil
 		})
 
@@ -41,7 +40,7 @@ func AuthMiddleware(next http.Handler, userServiceConn *grpc.ClientConn) http.Ha
 
 		userID := claims["user_id"].(int64)
 
-		// Fetch user details from User Microservice (B)
+		// Fetch user details
 		userClient := userpb.NewUserServiceClient(userServiceConn)
 		resp, err := userClient.GetUser(context.Background(), &userpb.GetUserRequest{UserId: userID})
 		if err != nil {
@@ -50,9 +49,9 @@ func AuthMiddleware(next http.Handler, userServiceConn *grpc.ClientConn) http.Ha
 		}
 
 		// Add user details to context
-		ctx := context.WithValue(r.Context(), "user", resp.User)
+		r = h.contextSetUser(r, resp.User)
 
 		// Proceed to next handler
-		next.ServeHTTP(w, r.WithContext(ctx))
+		next.ServeHTTP(w, r)
 	})
 }

@@ -3,9 +3,10 @@ module github.com/emzola/numer/gateway-service
 go 1.22.0
 
 require (
-	github.com/emzola/numer/invoice-service v0.0.0-20240911014850-ab230fcce9ed
-	github.com/emzola/numer/user-service v0.0.0-20240911092756-6da1d07013ff
+	github.com/emzola/numer/invoice-service v0.0.0-20240911104756-0f431372a5fa
+	github.com/emzola/numer/user-service v0.0.0-20240911104756-0f431372a5fa
 	github.com/golang-jwt/jwt/v5 v5.2.1
+	github.com/golang/protobuf v1.5.4
 	github.com/hashicorp/consul/api v1.29.4
 	github.com/julienschmidt/httprouter v1.3.0
 	google.golang.org/grpc v1.66.0

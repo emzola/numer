@@ -20,10 +20,10 @@ github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSs
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/emzola/numer/invoice-service v0.0.0-20240911014850-ab230fcce9ed h1:mB3+lMbGJD7sqdOGRLbfCINQmHcAMBrFyHPYezdIMPM=
-github.com/emzola/numer/invoice-service v0.0.0-20240911014850-ab230fcce9ed/go.mod h1:IATUuYFUmXdlI0OmcQjvOLYxlV+jbvtGhWTbBKFmYHQ=
-github.com/emzola/numer/user-service v0.0.0-20240911092756-6da1d07013ff h1:+eCTYe2Zt3AQxVLu0uij/C9QQiYJiUiecCBIH2KIXps=
-github.com/emzola/numer/user-service v0.0.0-20240911092756-6da1d07013ff/go.mod h1:QXE6K9/dEEgkuxQOEtzX6Lkk73iwkrPIlrt1Zpdj5aM=
+github.com/emzola/numer/invoice-service v0.0.0-20240911104756-0f431372a5fa h1:Gz79YKbQWGJgQWNXs6qTr5zZip7KB6Z/jAst8QHOtPU=
+github.com/emzola/numer/invoice-service v0.0.0-20240911104756-0f431372a5fa/go.mod h1:IATUuYFUmXdlI0OmcQjvOLYxlV+jbvtGhWTbBKFmYHQ=
+github.com/emzola/numer/user-service v0.0.0-20240911104756-0f431372a5fa h1:+Unh9WVaeklBgbBgQTSY3bddZ+VS8Gmo08kCL6qUecc=
+github.com/emzola/numer/user-service v0.0.0-20240911104756-0f431372a5fa/go.mod h1:QXE6K9/dEEgkuxQOEtzX6Lkk73iwkrPIlrt1Zpdj5aM=
 github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5KwzbycvMj4=
 github.com/fatih/color v1.9.0/go.mod h1:eQcE1qtQxscV5RaZvpXrrb8Drkc3/DdQ+uUYCNjL+zU=
 github.com/fatih/color v1.13.0/go.mod h1:kLAiJbzzSOZDVNGyDpeOxJ47H46qBXwg5ILebYFFOfk=
@@ -40,6 +40,8 @@ github.com/golang-jwt/jwt/v5 v5.2.1/go.mod h1:pqrtFR0X4osieyHYxtmOUWsAWrfe1Q5UVI
 github.com/golang/protobuf v1.2.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/golang/protobuf v1.3.1/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/golang/protobuf v1.3.2/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
+github.com/golang/protobuf v1.5.4 h1:i7eJL8qZTpSEXOPTxNKhASYpMn+8e5Q6AdndVa1dWek=
+github.com/golang/protobuf v1.5.4/go.mod h1:lnTiLA8Wa4RWRcIUkrtSVa5nRhsEGBg48fD6rSs7xps=
 github.com/google/btree v0.0.0-20180813153112-4030bb1f1f0c/go.mod h1:lNA+9X1NB3Zf8V7Ke586lFgjr2dZNuvo3lPJSGZ5JPQ=
 github.com/google/btree v1.0.1 h1:gK4Kx5IaGY9CD5sPJ36FHiBJ6ZXl0kilRiiCj+jdYp4=
 github.com/google/btree v1.0.1/go.mod h1:xXMiIv4Fb/0kKde4SpL7qlzvu5cMJDRkFDxJfI9uaxA=
