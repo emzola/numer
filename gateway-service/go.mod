@@ -4,6 +4,7 @@ go 1.22.0
 
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/emzola/numer/invoice-service v0.0.0-20240911014850-ab230fcce9ed
 	github.com/hashicorp/consul/api v1.29.4
 	github.com/julienschmidt/httprouter v1.3.0
 	google.golang.org/grpc v1.66.0
