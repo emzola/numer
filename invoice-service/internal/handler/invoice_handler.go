@@ -5,7 +5,7 @@ import (
 
 	"github.com/emzola/numer/invoice-service/internal/models"
 	"github.com/emzola/numer/invoice-service/internal/service"
-	publisher "github.com/emzola/numer/invoice-service/internal/service/rabbitmq"
+	"github.com/emzola/numer/invoice-service/internal/service/rabbitmq"
 	pb "github.com/emzola/numer/invoice-service/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -13,11 +13,11 @@ import (
 
 type InvoiceHandler struct {
 	service   *service.InvoiceService
-	publisher *publisher.Publisher
+	publisher *rabbitmq.Publisher
 	pb.UnimplementedInvoiceServiceServer
 }
 
-func NewInvoiceHandler(service *service.InvoiceService, publisher *publisher.Publisher) *InvoiceHandler {
+func NewInvoiceHandler(service *service.InvoiceService, publisher *rabbitmq.Publisher) *InvoiceHandler {
 	return &InvoiceHandler{
 		service:   service,
 		publisher: publisher,

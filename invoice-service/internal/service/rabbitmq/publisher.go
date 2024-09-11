@@ -1,8 +1,10 @@
-package publisher
+package rabbitmq
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
+	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -15,25 +17,23 @@ type Publisher struct {
 
 // Initialize RabbitMQ connection
 func NewPublisher(url, queueName string) (*Publisher, error) {
-	conn, err := amqp.Dial(url)
+	var conn *amqp.Connection
+	var err error
+
+	for i := 0; i < 5; i++ { // Retry 5 times
+		conn, err = amqp.Dial(url)
+		if err == nil {
+			break
+		}
+		log.Printf("failed to connect to RabbitMQ, retrying in 5 seconds... (%d/5)", i+1)
+		time.Sleep(5 * time.Second)
+	}
+
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to connect to RabbitMQ: %w", err)
 	}
 
 	ch, err := conn.Channel()
-	if err != nil {
-		return nil, err
-	}
-
-	// Declare a queue for activity logs
-	_, err = ch.QueueDeclare(
-		queueName, // queue name
-		true,      // durable
-		false,     // delete when unused
-		false,     // exclusive
-		false,     // no-wait
-		nil,       // arguments
-	)
 	if err != nil {
 		return nil, err
 	}

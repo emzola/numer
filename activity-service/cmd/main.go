@@ -98,18 +98,21 @@ func main() {
 	}()
 
 	// RabbitMQ Consumer
-	go func() {
-		consumer, err := rabbitmq.NewConsumer(os.Getenv("RABBITMQ_URL"), "activity_logs", repo)
-		if err != nil {
-			logger.Error("failed to connect to rabbitMQ", slog.Any("error", err))
+	consumer, err := rabbitmq.NewConsumer(os.Getenv("RABBITMQ_URL"), "activity_logs", repo)
+	if err != nil {
+		logger.Error("failed to connect to rabbitMQ", slog.Any("error", err))
+	}
+	defer func() {
+		if consumer != nil {
+			consumer.Close()
 		}
-		defer consumer.Close()
+	}()
 
-		// Start consuming messages
-		consumer.ConsumeMessages()
-
-		// Keep the service running
-		select {}
+	// Start consuming messages
+	go func() {
+		if consumer != nil {
+			consumer.ConsumeMessages()
+		}
 	}()
 
 	logger.Info("activity service running", slog.String("port", cfg.GRPCServerAddress))
