@@ -53,7 +53,7 @@ func (h *Handler) CreateInvoice(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
 
-	// Create gRPC connection to invoice service
+	// Step 5: Create gRPC connection to invoice service
 	conn, err := grpcutil.ServiceConnection(ctx, "invoice-service", h.registry)
 	if err != nil {
 		h.serverErrorResponse(w, r, err)
@@ -62,13 +62,18 @@ func (h *Handler) CreateInvoice(w http.ResponseWriter, r *http.Request) {
 	defer conn.Close()
 
 	client := invoicepb.NewInvoiceServiceClient(conn)
-	invoice, err := client.CreateInvoice(ctx, grpcReq)
+	grpcRes, err := client.CreateInvoice(ctx, grpcReq)
 	if err != nil {
 		h.serverErrorResponse(w, r, err)
 		return
 	}
 
-	err = h.encodeJSON(w, http.StatusCreated, envelope{"invoice": invoice}, nil)
+	// Step 6: Map the gRPC CreateInvoiceResponse back to the HTTP response
+	invoiceResp := CreateInvoiceHTTPResp{
+		InvoiceID: grpcRes.InvoiceId,
+	}
+
+	err = h.encodeJSON(w, http.StatusCreated, envelope{"invoice": invoiceResp}, nil)
 	if err != nil {
 		h.serverErrorResponse(w, r, err)
 	}
@@ -81,7 +86,7 @@ func (h *Handler) GetInvoice(w http.ResponseWriter, r *http.Request) {
 		h.notFoundResponse(w, r)
 	}
 
-	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
 
 	// Create gRPC connection to invoice service
@@ -93,13 +98,103 @@ func (h *Handler) GetInvoice(w http.ResponseWriter, r *http.Request) {
 	defer conn.Close()
 
 	client := invoicepb.NewInvoiceServiceClient(conn)
-	invoice, err := client.GetInvoice(context.Background(), &invoicepb.GetInvoiceRequest{InvoiceId: invoiceId})
+	grpcRes, err := client.GetInvoice(context.Background(), &invoicepb.GetInvoiceRequest{InvoiceId: invoiceId})
 	if err != nil {
 		h.serverErrorResponse(w, r, err)
 		return
 	}
 
-	err = h.encodeJSON(w, http.StatusOK, envelope{"invoice": invoice}, nil)
+	// Step 5: Map the gRPC GetInvoiceResponse back to the HTTP response
+	invoiceResp := GetInvoiceHTTPResp{
+		InvoiceID:          grpcRes.Invoice.Id,
+		UserID:             grpcRes.Invoice.UserId,
+		CustomerID:         grpcRes.Invoice.CustomerId,
+		IssueDate:          grpcRes.Invoice.IssueDate.AsTime(),
+		DueDate:            grpcRes.Invoice.DueDate.AsTime(),
+		Currency:           grpcRes.Invoice.Currency,
+		Items:              convertInvoiceItems(grpcRes.Invoice.Items),
+		DiscountPercentage: grpcRes.Invoice.DiscountPercentage,
+		AccountName:        grpcRes.Invoice.AccountName,
+		AccountNumber:      grpcRes.Invoice.AccountNumber,
+		BankName:           grpcRes.Invoice.BankName,
+		RoutingNumber:      grpcRes.Invoice.RoutingNumber,
+		Note:               grpcRes.Invoice.Note,
+	}
+
+	err = h.encodeJSON(w, http.StatusOK, envelope{"invoice": invoiceResp}, nil)
+	if err != nil {
+		h.serverErrorResponse(w, r, err)
+	}
+}
+
+func (h *Handler) UpdateInvoice(w http.ResponseWriter, r *http.Request) {
+	// Extract invoice ID param
+	invoiceId, err := h.readIDParam(r)
+	if err != nil {
+		h.notFoundResponse(w, r)
+	}
+
+	// Step 1: Decode the JSON body into the HTTP request struct
+	var httpReq UpdateInvoiceHTTPReq
+	err = h.decodeJSON(w, r, &httpReq)
+	if err != nil {
+		h.badRequestResponse(w, r, err)
+		return
+	}
+
+	// Step 2: Convert time.Time to protobuf Timestamp
+	issueDateProto := timestamppb.New(httpReq.IssueDate)
+	dueDateProto := timestamppb.New(httpReq.DueDate)
+
+	// Step 3: Convert the HTTP request into the gRPC UpdateInvoiceRequest
+	grpcReq := &invoicepb.UpdateInvoiceRequest{
+		InvoiceId:          invoiceId,
+		Status:             httpReq.Status,
+		IssueDate:          issueDateProto,
+		DueDate:            dueDateProto,
+		Currency:           httpReq.Currency,
+		DiscountPercentage: httpReq.DiscountPercentage,
+		AccountName:        httpReq.AccountName,
+		AccountNumber:      httpReq.AccountNumber,
+		BankName:           httpReq.BankName,
+		RoutingNumber:      httpReq.RoutingNumber,
+		Note:               httpReq.Note,
+	}
+
+	// Step 4: Map Invoice items from HTTP request to gRPC request with []*InvoiceItem
+	for _, item := range httpReq.Items {
+		grpcReq.Items = append(grpcReq.Items, &invoicepb.InvoiceItem{
+			Description: item.Description,
+			Quantity:    item.Quantity,
+			UnitPrice:   item.UnitPrice,
+		})
+	}
+
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+	defer cancel()
+
+	// Create gRPC connection to invoice service
+	conn, err := grpcutil.ServiceConnection(ctx, "invoice-service", h.registry)
+	if err != nil {
+		h.serverErrorResponse(w, r, err)
+		return
+	}
+	defer conn.Close()
+
+	client := invoicepb.NewInvoiceServiceClient(conn)
+	grpcRes, err := client.UpdateInvoice(ctx, grpcReq)
+	if err != nil {
+		h.serverErrorResponse(w, r, err)
+		return
+	}
+
+	// Step 5: Map the gRPC UpdateInvoiceResponse back to the HTTP response
+	updateInvResp := UpdateInvoiceHTTPResp{
+		InvoiceID: grpcRes.InvoiceId,
+		Message:   grpcRes.Message,
+	}
+
+	err = h.encodeJSON(w, http.StatusOK, envelope{"invoice": updateInvResp}, nil)
 	if err != nil {
 		h.serverErrorResponse(w, r, err)
 	}
@@ -109,10 +204,25 @@ func (h *Handler) GetInvoices(w http.ResponseWriter, r *http.Request) {
 	// Extract user from context
 	user := h.contextGetUser(r)
 
-	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	// Step 1: Decode the JSON body into the HTTP request struct
+	var httpReq GetInvoicesHTTPReq
+	err := h.decodeJSON(w, r, &httpReq)
+	if err != nil {
+		h.badRequestResponse(w, r, err)
+		return
+	}
+
+	// Step 2: Convert the HTTP request into the gRPC ListInvoicesRequest
+	grpcReq := &invoicepb.ListInvoicesRequest{
+		UserId:    user.Id,
+		PageSize:  httpReq.PageSize,
+		PageToken: httpReq.PageToken,
+	}
+
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
 
-	// Create gRPC connection to invoice service
+	// Step 3: Create gRPC connection to invoice service
 	conn, err := grpcutil.ServiceConnection(ctx, "invoice-service", h.registry)
 	if err != nil {
 		h.serverErrorResponse(w, r, err)
@@ -121,13 +231,19 @@ func (h *Handler) GetInvoices(w http.ResponseWriter, r *http.Request) {
 	defer conn.Close()
 
 	client := invoicepb.NewInvoiceServiceClient(conn)
-	invoices, err := client.ListInvoices(context.Background(), &invoicepb.ListInvoicesRequest{UserId: user.Id})
+	grpcRes, err := client.ListInvoices(context.Background(), grpcReq)
 	if err != nil {
 		h.serverErrorResponse(w, r, err)
 		return
 	}
 
-	err = h.encodeJSON(w, http.StatusOK, envelope{"invoices": invoices}, nil)
+	// Step 5: Map the gRPC ListInvoicesResponse back to the HTTP response
+	invoiceResp := GetInvoicesHTTPResp{
+		Invoices:      convertInvoices(grpcRes.Invoices),
+		NextPageToken: grpcRes.NextPageToken,
+	}
+
+	err = h.encodeJSON(w, http.StatusOK, envelope{"invoices": invoiceResp}, nil)
 	if err != nil {
 		h.serverErrorResponse(w, r, err)
 	}
@@ -153,4 +269,77 @@ type InvoiceItem struct {
 	Description string `json:"description"`
 	Quantity    int32  `json:"quantity"`
 	UnitPrice   int64  `json:"price"`
+}
+
+// Struct to capture the HTTP response
+type CreateInvoiceHTTPResp struct {
+	InvoiceID int64 `json:"invoice_id"`
+}
+
+// Struct to capture the HTTP response (based on GetInvoiceResponse)
+type GetInvoiceHTTPResp struct {
+	InvoiceID          int64         `json:"invoice_id"`
+	UserID             int64         `json:"user_id"`
+	CustomerID         int64         `json:"customer_id"`
+	IssueDate          time.Time     `json:"issue_date"`
+	DueDate            time.Time     `json:"due_date"`
+	Currency           string        `json:"currency"`
+	Items              []InvoiceItem `json:"items"`
+	DiscountPercentage int64         `json:"discount_percentage"`
+	AccountName        string        `json:"account_name"`
+	AccountNumber      string        `json:"account_number"`
+	BankName           string        `json:"bank_name"`
+	RoutingNumber      string        `json:"routing_number"`
+	Note               string        `json:"note"`
+}
+
+// Struct to capture the HTTP request JSON data (matching the gRPC UpdateInvoiceRequest)
+type UpdateInvoiceHTTPReq struct {
+	Status             string        `json:"status"`
+	IssueDate          time.Time     `json:"issue_date"`
+	DueDate            time.Time     `json:"due_date"`
+	Currency           string        `json:"currency"`
+	Items              []InvoiceItem `json:"items"`
+	DiscountPercentage int64         `json:"discount_percentage"`
+	AccountName        string        `json:"account_name"`
+	AccountNumber      string        `json:"account_number"`
+	BankName           string        `json:"bank_name"`
+	RoutingNumber      string        `json:"routing_number"`
+	Note               string        `json:"note"`
+}
+
+// Struct to capture the HTTP response (based on UpdateInvoiceResponse)
+type UpdateInvoiceHTTPResp struct {
+	InvoiceID int64  `json:"invoice_id"`
+	Message   string `json:"message"`
+}
+
+// Struct to capture the HTTP request JSON data
+type GetInvoicesHTTPReq struct {
+	UserID    int64  `json:"user_id"`
+	PageSize  int32  `json:"page_size"`
+	PageToken string `json:"page_token"`
+}
+
+// Struct to capture the HTTP response
+type GetInvoicesHTTPResp struct {
+	Invoices      []InvoiceHTTP `json:"invoices"`
+	NextPageToken string        `json:"next_page_token"`
+}
+
+// Struct to represent an Invoice in the HTTP response
+type InvoiceHTTP struct {
+	InvoiceID          int64         `json:"invoice_id"`
+	UserID             int64         `json:"user_id"`
+	CustomerID         int64         `json:"customer_id"`
+	IssueDate          time.Time     `json:"issue_date"`
+	DueDate            time.Time     `json:"due_date"`
+	Currency           string        `json:"currency"`
+	Items              []InvoiceItem `json:"items"`
+	DiscountPercentage int64         `json:"discount_percentage"`
+	AccountName        string        `json:"account_name"`
+	AccountNumber      string        `json:"account_number"`
+	BankName           string        `json:"bank_name"`
+	RoutingNumber      string        `json:"routing_number"`
+	Note               string        `json:"note"`
 }

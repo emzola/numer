@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	invoicepb "github.com/emzola/numer/invoice-service/proto"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -87,4 +88,40 @@ func (h *Handler) decodeJSON(w http.ResponseWriter, r *http.Request, dst any) er
 		return errors.New("body must only contain a single JSON value")
 	}
 	return nil
+}
+
+// Convert gRPC Invoices to HTTP Invoices
+func convertInvoices(invoices []*invoicepb.Invoice) []InvoiceHTTP {
+	httpInvoices := make([]InvoiceHTTP, len(invoices))
+	for i, inv := range invoices {
+		httpInvoices[i] = InvoiceHTTP{
+			InvoiceID:          inv.Id,
+			UserID:             inv.UserId,
+			CustomerID:         inv.CustomerId,
+			IssueDate:          inv.IssueDate.AsTime(),
+			DueDate:            inv.DueDate.AsTime(),
+			Currency:           inv.Currency,
+			Items:              convertInvoiceItems(inv.Items),
+			DiscountPercentage: inv.DiscountPercentage,
+			AccountName:        inv.AccountName,
+			AccountNumber:      inv.AccountNumber,
+			BankName:           inv.BankName,
+			RoutingNumber:      inv.RoutingNumber,
+			Note:               inv.Note,
+		}
+	}
+	return httpInvoices
+}
+
+// Convert gRPC InvoiceItems to HTTP InvoiceItems
+func convertInvoiceItems(items []*invoicepb.InvoiceItem) []InvoiceItem {
+	httpItems := make([]InvoiceItem, len(items))
+	for i, item := range items {
+		httpItems[i] = InvoiceItem{
+			Description: item.Description,
+			Quantity:    item.Quantity,
+			UnitPrice:   item.UnitPrice,
+		}
+	}
+	return httpItems
 }
