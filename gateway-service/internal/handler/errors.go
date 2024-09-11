@@ -43,42 +43,6 @@ func (h *Handler) badRequestResponse(w http.ResponseWriter, r *http.Request, err
 	h.errorResponse(w, r, http.StatusBadRequest, err.Error())
 }
 
-func (h *Handler) failedValidationResponse(w http.ResponseWriter, r *http.Request, errors map[string]string) {
-	h.errorResponse(w, r, http.StatusUnprocessableEntity, errors)
-}
-
-func (h *Handler) editConflictResponse(w http.ResponseWriter, r *http.Request) {
-	message := "unable to update the record due to an edit conflict, please try again"
-	h.errorResponse(w, r, http.StatusConflict, message)
-}
-
-func (h *Handler) ratelimitExceededResponse(w http.ResponseWriter, r *http.Request) {
-	message := "rate limit exceeded"
-	h.errorResponse(w, r, http.StatusTooManyRequests, message)
-}
-
-func (h *Handler) invalidCredentialsResponse(w http.ResponseWriter, r *http.Request) {
-	message := "invalid authentication credentials"
-	h.errorResponse(w, r, http.StatusUnauthorized, message)
-}
-
-func (h *Handler) invalidAuthenticationTokenResponse(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("WWW-Authenticate", "Bearer")
-
-	message := "invalid or missing authentication token"
-	h.errorResponse(w, r, http.StatusUnauthorized, message)
-}
-
-func (h *Handler) authenticationRequiredResponse(w http.ResponseWriter, r *http.Request) {
-	message := "you must be authenticated to access this resource"
-	h.errorResponse(w, r, http.StatusUnauthorized, message)
-}
-
-func (h *Handler) inactiveAccountResponse(w http.ResponseWriter, r *http.Request) {
-	message := "your user account must be activated to access this resource"
-	h.errorResponse(w, r, http.StatusForbidden, message)
-}
-
 func (h *Handler) notPermittedResponse(w http.ResponseWriter, r *http.Request) {
 	message := "your user account doesn't have the necessary permissions to access this resource"
 	h.errorResponse(w, r, http.StatusForbidden, message)

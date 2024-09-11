@@ -249,6 +249,51 @@ func (h *Handler) GetInvoicesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (h *Handler) SendInvoiceHandler(w http.ResponseWriter, r *http.Request) {
+	// Decode the incoming JSON request
+	var httpReq SendInvoiceHTTPReq
+	err := h.decodeJSON(w, r, &httpReq)
+	if err != nil {
+		h.badRequestResponse(w, r, err)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	// Create gRPC connection to invoice service
+	conn, err := grpcutil.ServiceConnection(ctx, "invoice-service", h.registry)
+	if err != nil {
+		h.serverErrorResponse(w, r, err)
+		return
+	}
+	defer conn.Close()
+
+	client := invoicepb.NewInvoiceServiceClient(conn)
+
+	// Prepare the gRPC SendInvoiceRequest
+	grpcReq := &invoicepb.SendInvoiceRequest{
+		InvoiceId: httpReq.InvoiceID,
+	}
+
+	// Call the SendInvoice gRPC method
+	grpcRes, err := client.SendInvoice(ctx, grpcReq)
+	if err != nil {
+		h.serverErrorResponse(w, r, err)
+		return
+	}
+
+	// Map the gRPC SendInvoiceResponse to the HTTP response
+	resp := SendInvoiceHTTPResp{
+		Status: grpcRes.Status,
+	}
+
+	err = h.encodeJSON(w, http.StatusOK, envelope{"message": resp}, nil)
+	if err != nil {
+		h.serverErrorResponse(w, r, err)
+	}
+}
+
 // Struct to capture the HTTP request JSON data
 type CreateInvoiceHTTPReq struct {
 	CustomerID         int64         `json:"customer_id"`
@@ -342,4 +387,15 @@ type InvoiceHTTP struct {
 	BankName           string        `json:"bank_name"`
 	RoutingNumber      string        `json:"routing_number"`
 	Note               string        `json:"note"`
+}
+
+// Struct to capture the HTTP request
+type SendInvoiceHTTPReq struct {
+	InvoiceID     int64  `json:"invoice_id"`
+	CustomerEmail string `json:"customer_email"`
+}
+
+// Struct to capture the HTTP response
+type SendInvoiceHTTPResp struct {
+	Status string `json:"status"`
 }
