@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/emzola/numer/invoice-service/config"
+	"github.com/emzola/numer/invoice-service/internal/grpcutil"
 	"github.com/emzola/numer/invoice-service/internal/handler"
 	"github.com/emzola/numer/invoice-service/internal/repository"
 	"github.com/emzola/numer/invoice-service/internal/service"
@@ -21,6 +22,7 @@ import (
 	"github.com/emzola/numer/invoice-service/pkg/discovery"
 	consul "github.com/emzola/numer/invoice-service/pkg/discovery/consul"
 	pb "github.com/emzola/numer/invoice-service/proto"
+	notificationpb "github.com/emzola/numer/notification-service/proto"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -78,8 +80,17 @@ func main() {
 	}
 	defer publisher.Close()
 
+	// Set up connection to the Notification service
+	notifConn, err := grpcutil.ServiceConnection(ctx, "notification-service", registry)
+	if err != nil {
+		logger.Error("could not connect to notification service", slog.Any("error", err))
+	}
+	defer notifConn.Close()
+
+	notifClient := notificationpb.NewNotificationServiceClient(notifConn)
+
 	// Initialize gRPC handler with service and publisher
-	handler := handler.NewInvoiceHandler(svc, publisher)
+	handler := handler.NewInvoiceHandler(svc, publisher, notifClient)
 
 	grpcServer := grpc.NewServer()
 	reflection.Register(grpcServer)

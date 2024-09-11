@@ -109,8 +109,9 @@ message GetDueInvoicesResponse {
 
 message SendInvoiceRequest {
     int64 invoice_id = 1;
+    string customer_email = 2;
 }
 
 message SendInvoiceResponse {
-    bool success = 1;
+    string status = 1;
 }

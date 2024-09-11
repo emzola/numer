@@ -84,7 +84,7 @@ func (h *Handler) GetInvoiceActivitiesHandler(w http.ResponseWriter, r *http.Req
 
 	// Convert the HTTP request into the gRPC ListInvoicesRequest
 	grpcReq := &activitypb.GetInvoiceActivitiesRequest{
-		UserId: invoiceId,
+		InvoiceId: invoiceId,
 	}
 
 	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)

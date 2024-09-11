@@ -3,6 +3,7 @@ module github.com/emzola/numer/invoice-service
 go 1.22.0
 
 require (
+	github.com/emzola/numer/notification-service v0.0.0-20240911182929-6b549ed238b9
 	github.com/hashicorp/consul/api v1.29.4
 	github.com/jackc/pgx/v5 v5.6.0
 	github.com/rabbitmq/amqp091-go v1.10.0

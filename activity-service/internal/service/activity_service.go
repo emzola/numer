@@ -9,8 +9,8 @@ import (
 
 type activityRepository interface {
 	LogActivity(ctx context.Context, activity *models.Activity)
-	GetUserActivities(ctx context.Context, userID string, limit int) ([]*models.Activity, error)
-	GetInvoiceActivities(ctx context.Context, invoiceID string) ([]*models.Activity, error)
+	GetUserActivities(ctx context.Context, userID int64, limit int) ([]*models.Activity, error)
+	GetInvoiceActivities(ctx context.Context, invoiceID int64) ([]*models.Activity, error)
 }
 
 type ActivityService struct {
@@ -32,10 +32,10 @@ func (s *ActivityService) LogActivity(ctx context.Context, invoiceID, userID int
 	s.repo.LogActivity(ctx, activity)
 }
 
-func (s *ActivityService) GetUserActivities(ctx context.Context, userID string, limit int) ([]*models.Activity, error) {
+func (s *ActivityService) GetUserActivities(ctx context.Context, userID int64, limit int) ([]*models.Activity, error) {
 	return s.repo.GetUserActivities(ctx, userID, limit)
 }
 
-func (s *ActivityService) GetInvoiceActivities(ctx context.Context, invoiceID string) ([]*models.Activity, error) {
+func (s *ActivityService) GetInvoiceActivities(ctx context.Context, invoiceID int64) ([]*models.Activity, error) {
 	return s.repo.GetInvoiceActivities(ctx, invoiceID)
 }

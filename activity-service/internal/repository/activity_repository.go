@@ -25,7 +25,7 @@ func (r *ActivityRepository) LogActivity(ctx context.Context, activity *models.A
 	}
 }
 
-func (r *ActivityRepository) GetUserActivities(ctx context.Context, userID string, limit int) ([]*models.Activity, error) {
+func (r *ActivityRepository) GetUserActivities(ctx context.Context, userID int64, limit int) ([]*models.Activity, error) {
 	query := `SELECT invoice_id, user_id, action, description, timestamp FROM activities 
               WHERE user_id = $1 ORDER BY timestamp DESC LIMIT $2`
 	rows, err := r.db.QueryContext(ctx, query, userID, limit)
@@ -45,7 +45,7 @@ func (r *ActivityRepository) GetUserActivities(ctx context.Context, userID strin
 	return activities, nil
 }
 
-func (r *ActivityRepository) GetInvoiceActivities(ctx context.Context, invoiceID string) ([]*models.Activity, error) {
+func (r *ActivityRepository) GetInvoiceActivities(ctx context.Context, invoiceID int64) ([]*models.Activity, error) {
 	query := `SELECT invoice_id, user_id, action, description, timestamp FROM activities 
               WHERE invoice_id = $1 ORDER BY timestamp`
 	rows, err := r.db.QueryContext(ctx, query, invoiceID)

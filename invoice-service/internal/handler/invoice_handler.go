@@ -2,25 +2,29 @@ package handler
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/emzola/numer/invoice-service/internal/models"
 	"github.com/emzola/numer/invoice-service/internal/service"
 	"github.com/emzola/numer/invoice-service/internal/service/rabbitmq"
 	pb "github.com/emzola/numer/invoice-service/proto"
+	notificationpb "github.com/emzola/numer/notification-service/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 type InvoiceHandler struct {
-	service   *service.InvoiceService
-	publisher *rabbitmq.Publisher
+	service            *service.InvoiceService
+	publisher          *rabbitmq.Publisher
+	notificationClient notificationpb.NotificationServiceClient
 	pb.UnimplementedInvoiceServiceServer
 }
 
-func NewInvoiceHandler(service *service.InvoiceService, publisher *rabbitmq.Publisher) *InvoiceHandler {
+func NewInvoiceHandler(service *service.InvoiceService, publisher *rabbitmq.Publisher, notificationClient notificationpb.NotificationServiceClient) *InvoiceHandler {
 	return &InvoiceHandler{
-		service:   service,
-		publisher: publisher,
+		service:            service,
+		publisher:          publisher,
+		notificationClient: notificationClient,
 	}
 }
 
@@ -143,4 +147,30 @@ func (s *InvoiceHandler) GetDueInvoices(ctx context.Context, req *pb.GetDueInvoi
 	}
 
 	return &pb.GetDueInvoicesResponse{Invoices: protoInvoices}, nil
+}
+
+func (h *InvoiceHandler) SendInvoiceEmail(ctx context.Context, req *pb.SendInvoiceRequest) (*pb.SendInvoiceResponse, error) {
+	// Get the invoice details from the service layer
+	invoice, err := h.service.GetInvoice(ctx, req.InvoiceId)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get invoice: %v", err)
+	}
+
+	// Prepare the email message body
+	emailBody := fmt.Sprintf("Dear %d, \n\nPlease find your invoice for $%d due on %s. \n\n%s",
+		invoice.ID, invoice.Total, invoice.DueDate, invoice.Note)
+
+	// Send email via NotificationService
+	_, err = h.notificationClient.SendNotification(ctx, &notificationpb.SendNotificationRequest{
+		Email:   "test@example.com",
+		Subject: "Your Invoice",
+		Message: emailBody,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to send email: %v", err)
+	}
+
+	return &pb.SendInvoiceResponse{
+		Status: "Email sent successfully",
+	}, nil
 }
