@@ -83,6 +83,9 @@ func main() {
 		client.NewNotificationClient(invoiceConn),
 		client.NewUserClient(userConn),
 	)
+	go func() {
+		scheduler.Start()
+	}()
 
 	// Initialize server
 	grpcServer := grpc.NewServer()
@@ -112,8 +115,6 @@ func main() {
 	if err := grpcServer.Serve(lis); err != nil {
 		panic(err)
 	}
-
-	scheduler.Start()
 
 	wg.Wait()
 }

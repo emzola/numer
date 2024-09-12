@@ -21,7 +21,7 @@ func (h *Handler) Routes() http.Handler {
 	router.HandlerFunc(http.MethodGet, "/stats", h.GetStatsHandler)
 
 	router.HandlerFunc(http.MethodGet, "/activities/user", h.GetUserActivitiesHandler)
-	router.HandlerFunc(http.MethodGet, "/activities/invoice", h.GetInvoiceActivitiesHandler)
+	router.HandlerFunc(http.MethodGet, "/activities/invoice/:id", h.GetInvoiceActivitiesHandler)
 
 	router.HandlerFunc(http.MethodPost, "/reminders", h.GetInvoiceActivitiesHandler)
 

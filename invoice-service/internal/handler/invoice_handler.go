@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/emzola/numer/invoice-service/internal/models"
 	"github.com/emzola/numer/invoice-service/internal/service"
@@ -11,6 +12,12 @@ import (
 	notificationpb "github.com/emzola/numer/notification-service/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+)
+
+const (
+	maxRetries        = 5
+	initialBackoffMs  = 100
+	backoffMultiplier = 2
 )
 
 type InvoiceHandler struct {
@@ -58,14 +65,14 @@ func (h *InvoiceHandler) CreateInvoice(ctx context.Context, req *pb.CreateInvoic
 	}
 
 	// Publish activity to rabbitMQ
-	message := map[string]interface{}{
+	activity := map[string]interface{}{
 		"invoice_id":  invoice.ID,
 		"user_id":     invoice.UserID,
 		"action":      "Invoice creation",
-		"description": "Created invoice" + " " + invoice.InvoiceNumber,
+		"description": fmt.Sprintf("Created invoice %s", invoice.InvoiceNumber),
 	}
 
-	h.publisher.Publish(message)
+	h.publisher.Publish(activity)
 
 	return &pb.CreateInvoiceResponse{InvoiceId: invoice.ID}, nil
 }
@@ -150,27 +157,54 @@ func (s *InvoiceHandler) GetDueInvoices(ctx context.Context, req *pb.GetDueInvoi
 }
 
 func (h *InvoiceHandler) SendInvoiceEmail(ctx context.Context, req *pb.SendInvoiceRequest) (*pb.SendInvoiceResponse, error) {
-	// Get the invoice details from the service layer
 	invoice, err := h.service.GetInvoice(ctx, req.InvoiceId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get invoice: %v", err)
 	}
 
 	// Prepare the email message body
-	emailBody := fmt.Sprintf("Dear %d, \n\nPlease find your invoice for $%d due on %s. \n\n%s",
+	message := fmt.Sprintf("Dear %d, \n\nPlease find your invoice for $%d due on %s. \n\n%s",
 		invoice.ID, invoice.Total, invoice.DueDate, invoice.Note)
 
-	// Send email via NotificationService
-	_, err = h.notificationClient.SendNotification(ctx, &notificationpb.SendNotificationRequest{
-		Email:   "test@example.com",
-		Subject: "Your Invoice",
-		Message: emailBody,
-	})
+	// Retry sending email
+	err = h.retrySendEmail(ctx, "test@example.com", "Your Invoice", message)
 	if err != nil {
-		return nil, fmt.Errorf("failed to send email: %v", err)
+		return nil, err
 	}
 
+	// Publish activity to rabbitMQ
+	activity := map[string]interface{}{
+		"invoice_id":  invoice.ID,
+		"user_id":     invoice.UserID,
+		"action":      "Invoice sent",
+		"description": fmt.Sprintf("Sent invoice %s to user %d", invoice.InvoiceNumber, invoice.UserID),
+	}
+
+	h.publisher.Publish(activity)
+
 	return &pb.SendInvoiceResponse{
-		Status: "Email sent successfully",
+		Status: "email sent successfully",
 	}, nil
+}
+
+func (h *InvoiceHandler) retrySendEmail(ctx context.Context, email, subject, message string) error {
+	var err error
+	for i := 0; i < maxRetries; i++ {
+		_, err = h.notificationClient.SendNotification(ctx, &notificationpb.SendNotificationRequest{
+			Email:   email,
+			Subject: subject,
+			Message: message,
+		})
+		if err == nil {
+			return nil
+		}
+
+		// Log the retry attempt
+		fmt.Printf("SendInvoiceEmail attempt %d failed: %v\n", i+1, err)
+
+		// Exponential backoff
+		backoffDuration := time.Duration(initialBackoffMs*(1<<i)) * time.Millisecond
+		time.Sleep(backoffDuration)
+	}
+	return fmt.Errorf("failed to send email after %d attempts: %w", maxRetries, err)
 }

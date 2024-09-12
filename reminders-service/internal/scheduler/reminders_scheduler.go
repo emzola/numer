@@ -47,11 +47,11 @@ func (s *Scheduler) CheckDueDates() {
 
 	for _, invoice := range invoices {
 		// Schedule reminders for 14, 7, 3 days and 24 hours before due date
-		s.scheduleReminder(invoice)
+		s.scheduleReminder(ctx, invoice)
 	}
 }
 
-func (s *Scheduler) scheduleReminder(invoice *invoicepb.Invoice) {
+func (s *Scheduler) scheduleReminder(ctx context.Context, invoice *invoicepb.Invoice) {
 	// Calculate the time difference
 	dueDate, _ := time.Parse(time.RFC3339, invoice.DueDate.AsTime().String())
 
