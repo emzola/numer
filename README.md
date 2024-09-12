@@ -4,7 +4,7 @@ A microservices backend to support an invoice management system. Uses gRPC for i
 
 ## Overview: 
 
-### Go, PostgresQL, RabbitMQ, go-cron
+### Go, PostgresQL, RabbitMQ, go-cron, Docker
 
 1. Internal Microservices (Communicates with other services using gRPC):
     - Invoice Service: 
@@ -66,4 +66,85 @@ make test
 ```bash
 make down
 ```
+## RESTful API Endpoints
+
+### Invoices
+
+- **Get all invoices**
+  - `GET /invoices`
+  - Description: Retrieve a list of all invoices for authenticated user.
+
+- **Create a new invoice**
+  - `POST /invoices`
+  - Description: Create a new invoice.
+
+- **Get a specific invoice by ID**
+  - `GET /invoices/{id}`
+  - Description: Retrieve a single invoice by its ID.
+
+- **Update a specific invoice by ID**
+  - `PATCH /invoices/{id}`
+  - Description: Update an existing invoice by its ID.
+
+- **Send a specific invoice**
+  - `POST /invoices/send`
+  - Description: Send an invoice.
+
+### Stats
+
+- **Get dashboard stats**
+  - `GET /stats`
+  - Description: Retrieve summary stats related to invoices for authenticated user.
+
+### Activities
+
+- **Get user activities**
+  - `GET /activities/user`
+  - Description: Retrieve activities related to authenticated user.
+
+- **Get activities for a specific invoice by ID**
+  - `GET /activities/invoice/{id}`
+  - Description: Retrieve activities related to a specific invoice.
+
+### Reminders
+
+- **Create a new reminder**
+  - `POST /reminders`
+  - Description: Create a new reminder.
+
+### Users
+
+- **Create a new user**
+  - `POST /users`
+  - Description: Create a new user.
+
+- **Get a specific user by ID**
+  - `GET /users/{id}`
+  - Description: Retrieve a single user by their ID.
+
+- **Update a specific user by ID**
+  - `PATCH /users/{id}`
+  - Description: Update an existing user by their ID.
+
+- **Delete a specific user by ID**
+  - `DELETE /users/{id}`
+  - Description: Delete a user by their ID.
+
+### Customers
+
+- **Create a new customer**
+  - `POST /customers`
+  - Description: Create a new customer.
+
+- **Get a specific customer by ID**
+  - `GET /customers/{id}`
+  - Description: Retrieve a single customer by their ID.
+
+- **Update a specific customer by ID**
+  - `PATCH /customers/{id}`
+  - Description: Update an existing customer by their ID.
+
+- **Delete a specific customer by ID**
+  - `DELETE /customers/{id}`
+  - Description: Delete a customer by their ID.
 
