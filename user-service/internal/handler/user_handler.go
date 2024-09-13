@@ -7,6 +7,8 @@ import (
 	"github.com/emzola/numer/user-service/internal/service"
 	pb "github.com/emzola/numer/user-service/proto"
 	"golang.org/x/crypto/bcrypt"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type UserHandler struct {
@@ -22,7 +24,7 @@ func NewUserHandler(userService *service.UserService) *UserHandler {
 func (h *UserHandler) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.UserResponse, error) {
 	user, err := h.userService.CreateUser(ctx, req.Email, req.Password, req.Role)
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &pb.UserResponse{User: models.ConvertUserToProto(user)}, nil
@@ -31,7 +33,7 @@ func (h *UserHandler) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 func (h *UserHandler) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.UserResponse, error) {
 	user, err := h.userService.GetUserByID(ctx, req.UserId)
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &pb.UserResponse{User: models.ConvertUserToProto(user)}, nil
@@ -50,7 +52,7 @@ func (h *UserHandler) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest)
 
 	err := h.userService.UpdateUser(ctx, user)
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &pb.UserResponse{User: models.ConvertUserToProto(user)}, nil
@@ -59,7 +61,7 @@ func (h *UserHandler) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest)
 func (h *UserHandler) DeleteUser(ctx context.Context, req *pb.DeleteUserRequest) (*pb.DeleteUserResponse, error) {
 	err := h.userService.DeleteUser(ctx, req.UserId)
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 	return &pb.DeleteUserResponse{Message: "user successfully deleted"}, nil
 }
@@ -67,16 +69,14 @@ func (h *UserHandler) DeleteUser(ctx context.Context, req *pb.DeleteUserRequest)
 func (h *UserHandler) AuthenticateUser(ctx context.Context, req *pb.AuthenticateUserRequest) (*pb.AuthenticateUserResponse, error) {
 	user, err := h.userService.GetUserByEmail(ctx, req.Email)
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.NotFound, err.Error())
 	}
 
-	// Check password
 	err = bcrypt.CompareHashAndPassword([]byte(user.HashedPassword), []byte(req.Password))
 	if err != nil {
-		return &pb.AuthenticateUserResponse{Valid: false}, err
+		return nil, status.Error(codes.Unauthenticated, err.Error())
 	}
 
-	// Successful authentication
 	return &pb.AuthenticateUserResponse{
 		Valid:  true,
 		UserId: user.ID,
@@ -96,7 +96,7 @@ func (h *UserHandler) CreateCustomer(ctx context.Context, req *pb.CreateCustomer
 
 	customer, err := h.userService.CreateCustomer(ctx, customer)
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &pb.CustomerResponse{Customer: models.ConvertCustomerToProto(customer)}, nil
@@ -105,7 +105,7 @@ func (h *UserHandler) CreateCustomer(ctx context.Context, req *pb.CreateCustomer
 func (h *UserHandler) GetCustomer(ctx context.Context, req *pb.GetCustomerRequest) (*pb.CustomerResponse, error) {
 	customer, err := h.userService.GetCustomerByID(ctx, req.CustomerId)
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.NotFound, err.Error())
 	}
 
 	return &pb.CustomerResponse{Customer: models.ConvertCustomerToProto(customer)}, nil
@@ -121,7 +121,7 @@ func (h *UserHandler) UpdateCustomer(ctx context.Context, req *pb.UpdateCustomer
 
 	err := h.userService.UpdateCustomer(ctx, customer)
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &pb.CustomerResponse{Customer: models.ConvertCustomerToProto(customer)}, nil
@@ -130,7 +130,7 @@ func (h *UserHandler) UpdateCustomer(ctx context.Context, req *pb.UpdateCustomer
 func (h *UserHandler) DeleteCustomer(ctx context.Context, req *pb.DeleteCustomerRequest) (*pb.DeleteCustomerResponse, error) {
 	err := h.userService.DeleteCustomer(ctx, req.CustomerId)
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &pb.DeleteCustomerResponse{Message: "customer successfully deleted"}, nil

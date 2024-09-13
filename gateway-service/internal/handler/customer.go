@@ -70,14 +70,6 @@ func (h *Handler) GetCustomerHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Decode the JSON body into the HTTP request struct
-	var httpReq GetCustomerHTTPReq
-	err = h.decodeJSON(w, r, &httpReq)
-	if err != nil {
-		h.badRequestResponse(w, r, err)
-		return
-	}
-
 	// Convert the HTTP request into the gRPC CreateUserRequest
 	grpcReq := &userpb.GetCustomerRequest{
 		CustomerId: customerId,
@@ -181,14 +173,6 @@ func (h *Handler) DeleteCustomerHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// Decode the JSON body into the HTTP request struct
-	var httpReq DeleteCustomerHTTPReq
-	err = h.decodeJSON(w, r, &httpReq)
-	if err != nil {
-		h.badRequestResponse(w, r, err)
-		return
-	}
-
 	// Convert the HTTP request into the gRPC CreateUserRequest
 	grpcReq := &userpb.DeleteCustomerRequest{
 		CustomerId: customerId,
@@ -225,7 +209,6 @@ func (h *Handler) DeleteCustomerHandler(w http.ResponseWriter, r *http.Request) 
 
 // Struct to capture the HTTP request JSON data
 type CreateCustomerHTTPReq struct {
-	UserId  int64  `json:"user_id"`
 	Name    string `json:"name"`
 	Email   string `json:"email"`
 	Address string `json:"address"`
@@ -241,21 +224,10 @@ type CustomerHTTPResp struct {
 }
 
 // Struct to capture the HTTP request JSON data
-type GetCustomerHTTPReq struct {
-	ID int64 `json:"customer_id"`
-}
-
-// Struct to capture the HTTP request JSON data
 type UpdateCustomerHTTPReq struct {
-	ID      int64  `json:"customer_id"`
 	Name    string `json:"name"`
 	Email   string `json:"email"`
 	Address string `json:"address"`
-}
-
-// Struct to capture the HTTP request JSON data
-type DeleteCustomerHTTPReq struct {
-	ID int64 `json:"customer_id"`
 }
 
 // Struct to capture the HTTP response

@@ -64,14 +64,6 @@ func (h *Handler) GetUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Decode the JSON body into the HTTP request struct
-	var httpReq GetUserHTTPReq
-	err = h.decodeJSON(w, r, &httpReq)
-	if err != nil {
-		h.badRequestResponse(w, r, err)
-		return
-	}
-
 	// Convert the HTTP request into the gRPC GetUserRequest
 	grpcReq := &userpb.GetUserRequest{
 		UserId: userId,
@@ -188,14 +180,6 @@ func (h *Handler) DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Decode the JSON body into the HTTP request struct
-	var httpReq DeleteUserHTTPReq
-	err = h.decodeJSON(w, r, &httpReq)
-	if err != nil {
-		h.badRequestResponse(w, r, err)
-		return
-	}
-
 	// Convert the HTTP request into the gRPC CreateUserRequest
 	grpcReq := &userpb.DeleteUserRequest{
 		UserId: user.Id,
@@ -230,51 +214,6 @@ func (h *Handler) DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) LoginUserHandler(w http.ResponseWriter, r *http.Request) {
-	var req LoginRequest
-	err := h.decodeJSON(w, r, &req)
-	if err != nil {
-		h.badRequestResponse(w, r, err)
-		return
-	}
-
-	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
-	defer cancel()
-
-	// Create gRPC connection to user service
-	conn, err := grpcutil.ServiceConnection(ctx, "user-service", h.registry)
-	if err != nil {
-		h.serverErrorResponse(w, r, err)
-		return
-	}
-	defer conn.Close()
-
-	client := userpb.NewUserServiceClient(conn)
-
-	authReq := &userpb.AuthenticateUserRequest{
-		Email:    req.Email,
-		Password: req.Password,
-	}
-
-	authResp, err := client.AuthenticateUser(context.Background(), authReq)
-	if err != nil || authResp == nil || !authResp.Valid {
-		h.invalidAuthenticationTokenResponse(w, r)
-		return
-	}
-
-	// Generate JWT token upon successful authentication
-	token, err := GenerateJWTToken(authResp.UserId, authResp.Email, authResp.Role)
-	if err != nil {
-		h.serverErrorResponse(w, r, err)
-		return
-	}
-
-	err = h.encodeJSON(w, http.StatusOK, envelope{"token": token}, nil)
-	if err != nil {
-		h.serverErrorResponse(w, r, err)
-	}
-}
-
 // Struct to capture the HTTP request JSON data
 type CreateUserHTTPReq struct {
 	Email    string `json:"email"`
@@ -291,11 +230,6 @@ type UserHTTPResp struct {
 }
 
 // Struct to capture the HTTP request JSON data
-type GetUserHTTPReq struct {
-	ID int64 `json:"user_id"`
-}
-
-// Struct to capture the HTTP request JSON data
 type UpdateUserHTTPReq struct {
 	ID       int64  `json:"user_id"`
 	Email    string `json:"email"`
@@ -303,23 +237,7 @@ type UpdateUserHTTPReq struct {
 	Role     string `json:"role"`
 }
 
-// Struct to capture the HTTP request JSON data
-type DeleteUserHTTPReq struct {
-	ID int64 `json:"user_id"`
-}
-
 // Struct to capture the HTTP response
 type DeleteUserHTTPResp struct {
 	Message string `json:"message"`
-}
-
-// Struct to capture the HTTP request JSON data
-type LoginRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
-// Struct to capture the HTTP request response
-type TokenResponse struct {
-	Token string `json:"token"`
 }

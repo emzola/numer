@@ -87,7 +87,7 @@ make down
   - Description: Update an existing invoice by its ID.
 
 - **Send a specific invoice**
-  - `POST /invoices/{id}/send`
+  - `GET /invoices/{id}/send`
   - Description: Send an invoice.
 
 - **Create a reminder for an invoice**
@@ -103,11 +103,11 @@ make down
 ### Activities
 
 - **Get user activities**
-  - `GET /activities/user`
+  - `GET /users/{id}/activities`
   - Description: Retrieve activities related to authenticated user.
 
 - **Get activities for a specific invoice**
-  - `GET /activities/invoice/{id}`
+  - `GET /invoices/{id}/activities`
   - Description: Retrieve activities related to a specific invoice.
 
 ### Users
@@ -127,6 +127,10 @@ make down
 - **Delete a specific user by ID**
   - `DELETE /users/{id}`
   - Description: Delete a user by their ID.
+
+- **Generate authentication token**
+  - `POST /tokens/authentication`
+  - Description: Generates auth token and signs in a user.
 
 ### Customers
 

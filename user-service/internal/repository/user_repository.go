@@ -6,7 +6,6 @@ import (
 	"errors"
 
 	"github.com/emzola/numer/user-service/internal/models"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type UserRepository struct {
@@ -19,18 +18,13 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 
 // User management
 func (r *UserRepository) CreateUser(ctx context.Context, email, password, role string) (*models.User, error) {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		return &models.User{}, err
-	}
-
 	user := &models.User{
 		Email:          email,
-		HashedPassword: string(hashedPassword),
+		HashedPassword: password,
 		Role:           role,
 	}
 
-	err = r.db.QueryRowContext(ctx,
+	err := r.db.QueryRowContext(ctx,
 		"INSERT INTO users (email, hashed_password, role) VALUES ($1, $2, $3) RETURNING id, created_at, updated_at",
 		user.Email, user.HashedPassword, user.Role).
 		Scan(&user.ID, &user.CreatedAt, &user.UpdatedAt)

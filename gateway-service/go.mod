@@ -3,19 +3,19 @@ module github.com/emzola/numer/gateway-service
 go 1.22.0
 
 require (
-	github.com/emzola/numer/activity-service v0.0.0-20240911191836-59cb32b44bda
+	github.com/emzola/numer/activity-service v0.0.0-20240913051324-94f175801702
 	github.com/emzola/numer/invoice-service v0.0.0-20240913051324-94f175801702
-	github.com/emzola/numer/stats-service v0.0.0-20240911191836-59cb32b44bda
-	github.com/emzola/numer/user-service v0.0.0-20240913051324-94f175801702
+	github.com/emzola/numer/stats-service v0.0.0-20240913074304-e33b61dd60b7
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/hashicorp/consul/api v1.29.4
-	github.com/julienschmidt/httprouter v1.3.0
+	github.com/julienschmidt/httprouter v1.2.0
 	google.golang.org/grpc v1.66.0
 	google.golang.org/protobuf v1.34.2
 )
 
 require (
 	github.com/armon/go-metrics v0.4.1 // indirect
+	github.com/emzola/numer/user-service v0.0.0-20240913074304-e33b61dd60b7 // indirect
 	github.com/fatih/color v1.16.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect

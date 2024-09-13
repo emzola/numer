@@ -13,18 +13,22 @@ func (h *Handler) GetUserActivitiesHandler(w http.ResponseWriter, r *http.Reques
 	// Extract user from context
 	user := h.contextGetUser(r)
 
-	// Decode the JSON body into the HTTP request struct
-	var httpReq GetUserActivitiesHTTPReq
-	err := h.decodeJSON(w, r, &httpReq)
+	// Extract ID param
+	userId, err := h.readIDParam(r)
 	if err != nil {
-		h.badRequestResponse(w, r, err)
+		h.notFoundResponse(w, r)
+	}
+
+	// Basic validation to ensure user fetches own activities
+	if user.Id != userId {
+		h.notPermittedResponse(w, r)
 		return
 	}
 
 	// Convert the HTTP request into the gRPC ListInvoicesRequest
 	grpcReq := &activitypb.GetUserActivitiesRequest{
 		UserId: user.Id,
-		Limit:  httpReq.Limit,
+		Limit:  10,
 	}
 
 	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
@@ -75,14 +79,6 @@ func (h *Handler) GetInvoiceActivitiesHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	// Decode the JSON body into the HTTP request struct
-	var httpReq GetInvoiceActivitiesHTTPReq
-	err = h.decodeJSON(w, r, &httpReq)
-	if err != nil {
-		h.badRequestResponse(w, r, err)
-		return
-	}
-
 	// Convert the HTTP request into the gRPC ListInvoicesRequest
 	grpcReq := &activitypb.GetInvoiceActivitiesRequest{
 		InvoiceId: invoiceId,
@@ -128,12 +124,6 @@ func (h *Handler) GetInvoiceActivitiesHandler(w http.ResponseWriter, r *http.Req
 	}
 }
 
-// Struct to capture the HTTP request
-type GetUserActivitiesHTTPReq struct {
-	UserID int64 `json:"user_id"`
-	Limit  int32 `json:"limit"`
-}
-
 // Struct to capture the HTTP response
 type GetUserActivitiesHTTPResp struct {
 	Activities []ActivityHTTPResp `json:"activities"`
@@ -146,12 +136,6 @@ type ActivityHTTPResp struct {
 	Action      string `json:"action"`
 	Description string `json:"description"`
 	Timestamp   string `json:"timestamp"`
-}
-
-// Struct to capture the HTTP request (matching GetInvoiceActivitiesRequest)
-type GetInvoiceActivitiesHTTPReq struct {
-	InvoiceID int64 `json:"invoice_id"`
-	Limit     int32 `json:"limit"`
 }
 
 // Struct to capture the HTTP response (matching GetInvoiceActivitiesResponse)
