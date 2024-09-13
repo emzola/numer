@@ -11,11 +11,11 @@ import (
 	"google.golang.org/grpc"
 )
 
-func (h *Handler) AuthMiddleware(next http.Handler, userServiceConn *grpc.ClientConn) http.Handler {
+func (h *Handler) authMiddleware(next http.HandlerFunc, userServiceConn *grpc.ClientConn) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authorizationHeader := r.Header.Get("Authorization")
 		if authorizationHeader == "" {
-			http.Error(w, "authorization header missing", http.StatusUnauthorized)
+			h.invalidCredentialsResponse(w, r)
 			return
 		}
 
@@ -27,14 +27,14 @@ func (h *Handler) AuthMiddleware(next http.Handler, userServiceConn *grpc.Client
 		})
 
 		if err != nil || !token.Valid {
-			http.Error(w, "invalid or expired token", http.StatusUnauthorized)
+			h.invalidAuthenticationTokenResponse(w, r)
 			return
 		}
 
 		// Extract user claims (e.g., user_id)
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if !ok {
-			http.Error(w, "invalid token claims", http.StatusUnauthorized)
+			h.invalidAuthenticationTokenResponse(w, r)
 			return
 		}
 

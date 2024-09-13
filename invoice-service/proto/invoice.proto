@@ -9,7 +9,7 @@ service InvoiceService {
     rpc GetInvoice(GetInvoiceRequest) returns (GetInvoiceResponse);
     rpc UpdateInvoice(UpdateInvoiceRequest) returns (UpdateInvoiceResponse);
     rpc ListInvoices(ListInvoicesRequest) returns (ListInvoicesResponse);
-    rpc GetDueInvoices(GetDueInvoicesRequest) returns (GetDueInvoicesResponse);
+    rpc ScheduleInvoiceReminder(ScheduleInvoiceReminderRequest) returns (ScheduleInvoiceReminderResponse);
     rpc SendInvoice(SendInvoiceRequest) returns (SendInvoiceResponse);
 }
 
@@ -99,12 +99,14 @@ message ListInvoicesResponse {
     string next_page_token = 2;
 }
 
-message GetDueInvoicesRequest {
-    int32 threshold = 1;
+message ScheduleInvoiceReminderRequest {
+    int64 invoice_id = 1;
+    string customer_email = 2;
+    int32 reminder_type = 3; 
 }
 
-message GetDueInvoicesResponse {
-    repeated Invoice invoices = 1;
+message ScheduleInvoiceReminderResponse {
+    string status = 1;
 }
 
 message SendInvoiceRequest {

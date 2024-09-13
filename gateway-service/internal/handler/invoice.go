@@ -7,6 +7,7 @@ import (
 
 	"github.com/emzola/numer/gateway-service/internal/grpcutil"
 	invoicepb "github.com/emzola/numer/invoice-service/proto"
+	userpb "github.com/emzola/numer/user-service/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -84,6 +85,7 @@ func (h *Handler) GetInvoiceHandler(w http.ResponseWriter, r *http.Request) {
 	invoiceId, err := h.readIDParam(r)
 	if err != nil {
 		h.notFoundResponse(w, r)
+		return
 	}
 
 	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
@@ -132,6 +134,7 @@ func (h *Handler) UpdateInvoiceHandler(w http.ResponseWriter, r *http.Request) {
 	invoiceId, err := h.readIDParam(r)
 	if err != nil {
 		h.notFoundResponse(w, r)
+		return
 	}
 
 	// Decode the JSON body into the HTTP request struct
@@ -250,34 +253,56 @@ func (h *Handler) GetInvoicesHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) SendInvoiceHandler(w http.ResponseWriter, r *http.Request) {
-	// Decode the incoming JSON request
-	var httpReq SendInvoiceHTTPReq
-	err := h.decodeJSON(w, r, &httpReq)
+	// Extract invoice ID param
+	invoiceId, err := h.readIDParam(r)
 	if err != nil {
-		h.badRequestResponse(w, r, err)
+		h.notFoundResponse(w, r)
 		return
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 
-	// Create gRPC connection to invoice service
-	conn, err := grpcutil.ServiceConnection(ctx, "invoice-service", h.registry)
+	// Create gRPC connection to user service
+	userConn, err := grpcutil.ServiceConnection(ctx, "user-service", h.registry)
 	if err != nil {
 		h.serverErrorResponse(w, r, err)
 		return
 	}
-	defer conn.Close()
+	defer userConn.Close()
 
-	client := invoicepb.NewInvoiceServiceClient(conn)
+	userClient := userpb.NewUserServiceClient(userConn)
+
+	// Create gRPC connection to invoice service
+	invConn, err := grpcutil.ServiceConnection(ctx, "invoice-service", h.registry)
+	if err != nil {
+		h.serverErrorResponse(w, r, err)
+		return
+	}
+	defer invConn.Close()
+
+	invClient := invoicepb.NewInvoiceServiceClient(invConn)
+
+	// Fetch customer email associated with invoice
+	invoiceResp, err := invClient.GetInvoice(ctx, &invoicepb.GetInvoiceRequest{InvoiceId: invoiceId})
+	if err != nil {
+		h.serverErrorResponse(w, r, err)
+		return
+	}
+	customerResp, err := userClient.GetCustomer(ctx, &userpb.GetCustomerRequest{CustomerId: invoiceResp.Invoice.CustomerId})
+	if err != nil {
+		h.serverErrorResponse(w, r, err)
+		return
+	}
 
 	// Prepare the gRPC SendInvoiceRequest
 	grpcReq := &invoicepb.SendInvoiceRequest{
-		InvoiceId: httpReq.InvoiceID,
+		InvoiceId:     invoiceResp.Invoice.Id,
+		CustomerEmail: customerResp.Customer.Email,
 	}
 
 	// Call the SendInvoice gRPC method
-	grpcRes, err := client.SendInvoice(ctx, grpcReq)
+	grpcRes, err := invClient.SendInvoice(ctx, grpcReq)
 	if err != nil {
 		h.serverErrorResponse(w, r, err)
 		return
@@ -387,12 +412,6 @@ type InvoiceHTTP struct {
 	BankName           string        `json:"bank_name"`
 	RoutingNumber      string        `json:"routing_number"`
 	Note               string        `json:"note"`
-}
-
-// Struct to capture the HTTP request
-type SendInvoiceHTTPReq struct {
-	InvoiceID     int64  `json:"invoice_id"`
-	CustomerEmail string `json:"customer_email"`
 }
 
 // Struct to capture the HTTP response

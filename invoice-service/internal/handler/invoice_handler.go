@@ -10,6 +10,7 @@ import (
 	"github.com/emzola/numer/invoice-service/internal/service/rabbitmq"
 	pb "github.com/emzola/numer/invoice-service/proto"
 	notificationpb "github.com/emzola/numer/notification-service/proto"
+	reminderpb "github.com/emzola/numer/reminder-service/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -23,14 +24,16 @@ const (
 type InvoiceHandler struct {
 	service            *service.InvoiceService
 	publisher          *rabbitmq.Publisher
+	reminderClient     reminderpb.ReminderServiceClient
 	notificationClient notificationpb.NotificationServiceClient
 	pb.UnimplementedInvoiceServiceServer
 }
 
-func NewInvoiceHandler(service *service.InvoiceService, publisher *rabbitmq.Publisher, notificationClient notificationpb.NotificationServiceClient) *InvoiceHandler {
+func NewInvoiceHandler(service *service.InvoiceService, publisher *rabbitmq.Publisher, reminderClient reminderpb.ReminderServiceClient, notificationClient notificationpb.NotificationServiceClient) *InvoiceHandler {
 	return &InvoiceHandler{
 		service:            service,
 		publisher:          publisher,
+		reminderClient:     reminderClient,
 		notificationClient: notificationClient,
 	}
 }
@@ -142,18 +145,45 @@ func (s *InvoiceHandler) ListInvoices(ctx context.Context, req *pb.ListInvoicesR
 	}, nil
 }
 
-func (s *InvoiceHandler) GetDueInvoices(ctx context.Context, req *pb.GetDueInvoicesRequest) (*pb.GetDueInvoicesResponse, error) {
-	invoices, err := s.service.GetDueInvoices(ctx, req.Threshold)
+func (h *InvoiceHandler) ScheduleInvoiceReminder(ctx context.Context, req *pb.ScheduleInvoiceReminderRequest) (*pb.ScheduleInvoiceReminderResponse, error) {
+	invoice, err := h.service.GetInvoice(ctx, req.InvoiceId)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, err.Error())
+		return nil, status.Errorf(codes.NotFound, "invoice not found")
 	}
 
-	protoInvoices := make([]*pb.Invoice, len(invoices))
-	for i, invoice := range invoices {
-		protoInvoices[i] = models.ConvertInvoiceToProto(invoice)
+	// Calculate the reminder time based on the reminder_type (14, 7, 3, or 1 day before due date)
+	var reminderTime time.Time
+	switch req.ReminderType {
+	case 14:
+		reminderTime = invoice.DueDate.AddDate(0, 0, -14)
+	case 7:
+		reminderTime = invoice.DueDate.AddDate(0, 0, -7)
+	case 3:
+		reminderTime = invoice.DueDate.AddDate(0, 0, -3)
+	case 1:
+		reminderTime = invoice.DueDate.AddDate(0, 0, -1)
+	default:
+		return nil, fmt.Errorf("invalid reminder type")
 	}
 
-	return &pb.GetDueInvoicesResponse{Invoices: protoInvoices}, nil
+	// Prepare the email message
+	message := fmt.Sprintf("Reminder: Your invoice is due on %s. Please ensure payment of $%d is made.",
+		invoice.DueDate.Format("2006-01-02"), invoice.Total)
+
+	// Send the reminder request to the ReminderService
+	_, err = h.reminderClient.ScheduleReminder(ctx, &reminderpb.ScheduleReminderRequest{
+		InvoiceId:     req.InvoiceId,
+		CustomerEmail: req.CustomerEmail,
+		ReminderTime:  reminderTime.Format(time.RFC3339),
+		Message:       message,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to schedule reminder: %v", err)
+	}
+
+	return &pb.ScheduleInvoiceReminderResponse{
+		Status: "Reminder scheduled successfully",
+	}, nil
 }
 
 func (h *InvoiceHandler) SendInvoiceEmail(ctx context.Context, req *pb.SendInvoiceRequest) (*pb.SendInvoiceResponse, error) {

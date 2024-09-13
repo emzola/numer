@@ -72,6 +72,7 @@ func (h *Handler) GetInvoiceActivitiesHandler(w http.ResponseWriter, r *http.Req
 	invoiceId, err := h.readIDParam(r)
 	if err != nil {
 		h.notFoundResponse(w, r)
+		return
 	}
 
 	// Decode the JSON body into the HTTP request struct

@@ -20,7 +20,7 @@ RUN go mod download
 COPY . .
 
 # Build the Go application
-RUN go build -o reminders-service ./cmd/main.go
+RUN go build -o reminder-service ./cmd/main.go
 
 # Second stage: build a minimal image
 FROM alpine:latest
@@ -29,7 +29,7 @@ FROM alpine:latest
 WORKDIR /app
 
 # Copy the binary from the builder stage
-COPY --from=builder /app/reminders-service .
+COPY --from=builder /app/reminder-service .
 
 # Copy the .env file (if necessary)
 COPY .env .env
@@ -38,4 +38,4 @@ COPY .env .env
 EXPOSE 50055
 
 # Command to start the application
-CMD ["./reminders-service"]
+CMD ["./reminder-service"]

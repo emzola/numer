@@ -61,6 +61,7 @@ func (h *Handler) GetUserHandler(w http.ResponseWriter, r *http.Request) {
 	userId, err := h.readIDParam(r)
 	if err != nil {
 		h.notFoundResponse(w, r)
+		return
 	}
 
 	// Decode the JSON body into the HTTP request struct
@@ -115,6 +116,7 @@ func (h *Handler) UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 	userId, err := h.readIDParam(r)
 	if err != nil {
 		h.notFoundResponse(w, r)
+		return
 	}
 
 	// Basic validation to ensure user only updates own profile
@@ -164,7 +166,7 @@ func (h *Handler) UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 		Role:  grpcRes.User.Role,
 	}
 
-	err = h.encodeJSON(w, http.StatusCreated, envelope{"user": userResp}, nil)
+	err = h.encodeJSON(w, http.StatusOK, envelope{"user": userResp}, nil)
 	if err != nil {
 		h.serverErrorResponse(w, r, err)
 	}
@@ -222,7 +224,7 @@ func (h *Handler) DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 		Message: grpcRes.Message,
 	}
 
-	err = h.encodeJSON(w, http.StatusCreated, envelope{"message": userResp}, nil)
+	err = h.encodeJSON(w, http.StatusOK, envelope{"message": userResp}, nil)
 	if err != nil {
 		h.serverErrorResponse(w, r, err)
 	}

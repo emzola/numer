@@ -1,11 +1,10 @@
-module github.com/emzola/numer/reminders-service
+module github.com/emzola/numer/reminder-service
 
 go 1.22.0
 
 require (
-	github.com/emzola/numer/invoice-service v0.0.0-20240910082141-7d362cd58909
-	github.com/emzola/numer/notification-service v0.0.0-20240910082141-7d362cd58909
-	github.com/emzola/numer/user-service v0.0.0-20240910082141-7d362cd58909
+	github.com/emzola/numer/notification-service v0.0.0-20240912002045-27fc99677a20
+	github.com/emzola/numer/reminders-service v0.0.0-20240912002045-27fc99677a20
 	github.com/go-co-op/gocron v1.37.0
 	github.com/hashicorp/consul/api v1.29.4
 	google.golang.org/grpc v1.66.0

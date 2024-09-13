@@ -67,6 +67,7 @@ func (h *Handler) GetCustomerHandler(w http.ResponseWriter, r *http.Request) {
 	customerId, err := h.readIDParam(r)
 	if err != nil {
 		h.notFoundResponse(w, r)
+		return
 	}
 
 	// Decode the JSON body into the HTTP request struct
@@ -109,7 +110,7 @@ func (h *Handler) GetCustomerHandler(w http.ResponseWriter, r *http.Request) {
 		Address: grpcRes.Customer.Address,
 	}
 
-	err = h.encodeJSON(w, http.StatusCreated, envelope{"customer": cusResp}, nil)
+	err = h.encodeJSON(w, http.StatusOK, envelope{"customer": cusResp}, nil)
 	if err != nil {
 		h.serverErrorResponse(w, r, err)
 	}
@@ -120,6 +121,7 @@ func (h *Handler) UpdateCustomerHandler(w http.ResponseWriter, r *http.Request) 
 	customerId, err := h.readIDParam(r)
 	if err != nil {
 		h.notFoundResponse(w, r)
+		return
 	}
 
 	// Decode the JSON body into the HTTP request struct
@@ -165,7 +167,7 @@ func (h *Handler) UpdateCustomerHandler(w http.ResponseWriter, r *http.Request) 
 		Address: grpcRes.Customer.Address,
 	}
 
-	err = h.encodeJSON(w, http.StatusCreated, envelope{"customer": cusResp}, nil)
+	err = h.encodeJSON(w, http.StatusOK, envelope{"customer": cusResp}, nil)
 	if err != nil {
 		h.serverErrorResponse(w, r, err)
 	}
@@ -176,6 +178,7 @@ func (h *Handler) DeleteCustomerHandler(w http.ResponseWriter, r *http.Request) 
 	customerId, err := h.readIDParam(r)
 	if err != nil {
 		h.notFoundResponse(w, r)
+		return
 	}
 
 	// Decode the JSON body into the HTTP request struct
@@ -214,7 +217,7 @@ func (h *Handler) DeleteCustomerHandler(w http.ResponseWriter, r *http.Request) 
 		Message: grpcRes.Message,
 	}
 
-	err = h.encodeJSON(w, http.StatusCreated, envelope{"message": cusResp}, nil)
+	err = h.encodeJSON(w, http.StatusOK, envelope{"message": cusResp}, nil)
 	if err != nil {
 		h.serverErrorResponse(w, r, err)
 	}

@@ -47,3 +47,20 @@ func (h *Handler) notPermittedResponse(w http.ResponseWriter, r *http.Request) {
 	message := "your user account doesn't have the necessary permissions to access this resource"
 	h.errorResponse(w, r, http.StatusForbidden, message)
 }
+
+func (h *Handler) invalidCredentialsResponse(w http.ResponseWriter, r *http.Request) {
+	message := "invalid authentication credentials"
+	h.errorResponse(w, r, http.StatusUnauthorized, message)
+}
+
+func (h *Handler) invalidAuthenticationTokenResponse(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("WWW-Authenticate", "Bearer")
+
+	message := "invalid or missing authentication token"
+	h.errorResponse(w, r, http.StatusUnauthorized, message)
+}
+
+func (h *Handler) authenticationRequiredResponse(w http.ResponseWriter, r *http.Request) {
+	message := "you must be authenticated to access this resource"
+	h.errorResponse(w, r, http.StatusUnauthorized, message)
+}

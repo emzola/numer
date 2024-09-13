@@ -4,7 +4,7 @@ A microservices backend to support an invoice management system. Uses gRPC for i
 
 ## Overview: 
 
-### Go, PostgresQL, RabbitMQ, go-cron, Docker
+### Go, PostgreSQL, Docker, Consul, RabbitMQ, go-cron
 
 1. Internal Microservices (Communicates with other services using gRPC):
     - Invoice Service: 
@@ -17,7 +17,7 @@ A microservices backend to support an invoice management system. Uses gRPC for i
         - Manages notifications like invoice reminders or payment confirmations.
     - Stats Service:
         - Aggregate and summarize key metrics related to invoices (e.g., total paid, overdue, draft, and unpaid invoices).
-    - Reminders Service:
+    - Reminder Service:
         - Handles reminders and the scheduling of reminders (e.g., 7 days or 3 days before due date).
 
 2. API Gateway (RESTful):
@@ -87,8 +87,12 @@ make down
   - Description: Update an existing invoice by its ID.
 
 - **Send a specific invoice**
-  - `POST /invoices/send`
+  - `POST /invoices/{id}/send`
   - Description: Send an invoice.
+
+- **Create a reminder for an invoice**
+  - `POST /invoices/{id}/reminder`
+  - Description: Create a new reminder.
 
 ### Stats
 
@@ -102,15 +106,9 @@ make down
   - `GET /activities/user`
   - Description: Retrieve activities related to authenticated user.
 
-- **Get activities for a specific invoice by ID**
+- **Get activities for a specific invoice**
   - `GET /activities/invoice/{id}`
   - Description: Retrieve activities related to a specific invoice.
-
-### Reminders
-
-- **Create a new reminder**
-  - `POST /reminders`
-  - Description: Create a new reminder.
 
 ### Users
 

@@ -50,12 +50,12 @@ services:
     depends_on:
       - consul
 
-  reminders-service:
+  reminder-service:
     build:
-      context: ./reminders-service
+      context: ./reminder-service
       dockerfile: Dockerfile
     env_file:
-      - ./reminders-service/.env
+      - ./reminder-service/.env
     ports:
       - "50055:50055"
     depends_on:

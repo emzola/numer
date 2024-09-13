@@ -12,18 +12,20 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/emzola/numer/reminders-service/config"
-	"github.com/emzola/numer/reminders-service/internal/client"
-	"github.com/emzola/numer/reminders-service/internal/grpcutil"
-	"github.com/emzola/numer/reminders-service/internal/scheduler"
-	"github.com/emzola/numer/reminders-service/pkg/discovery"
-	consul "github.com/emzola/numer/reminders-service/pkg/discovery/consul"
-	pb "github.com/emzola/numer/reminders-service/proto"
+	notificationpb "github.com/emzola/numer/notification-service/proto"
+	"github.com/emzola/numer/reminder-service/config"
+	"github.com/emzola/numer/reminder-service/internal/grpcutil"
+	"github.com/emzola/numer/reminder-service/internal/handler"
+	"github.com/emzola/numer/reminder-service/internal/service"
+	"github.com/emzola/numer/reminder-service/pkg/discovery"
+	consul "github.com/emzola/numer/reminder-service/pkg/discovery/consul"
+	pb "github.com/emzola/numer/reminder-service/proto"
+	"github.com/go-co-op/gocron"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
 
-const serviceName = "reminders-service"
+const serviceName = "reminder-service"
 
 func main() {
 	// Initialize logger
@@ -56,13 +58,6 @@ func main() {
 	}()
 	defer registry.Deregister(ctx, instanceID, serviceName)
 
-	// Set up connection to the Invoice service
-	invoiceConn, err := grpcutil.ServiceConnection(ctx, "invoice-service", registry)
-	if err != nil {
-		logger.Error("could not connect to invoice service", slog.Any("error", err))
-	}
-	defer invoiceConn.Close()
-
 	// Set up connection to the Notification service
 	notificationConn, err := grpcutil.ServiceConnection(ctx, "notification-service", registry)
 	if err != nil {
@@ -70,27 +65,17 @@ func main() {
 	}
 	defer notificationConn.Close()
 
-	// Set up connection to the User service
-	userConn, err := grpcutil.ServiceConnection(ctx, "user-service", registry)
-	if err != nil {
-		logger.Error("could not connect to user service", slog.Any("error", err))
-	}
-	defer userConn.Close()
+	notificationClient := notificationpb.NewNotificationServiceClient(notificationConn)
 
-	// Initialize and start reminders scheduler
-	scheduler := scheduler.NewScheduler(
-		client.NewInvoiceClient(invoiceConn),
-		client.NewNotificationClient(invoiceConn),
-		client.NewUserClient(userConn),
-	)
-	go func() {
-		scheduler.Start()
-	}()
+	scheduler := gocron.NewScheduler(time.UTC)
 
-	// Initialize server
+	// Initialize service and handler
+	svc := service.NewReminderService(scheduler, notificationClient)
+	handler := handler.NewReminderHandler(svc)
+
 	grpcServer := grpc.NewServer()
 	reflection.Register(grpcServer)
-	pb.RegisterRemindersServiceServer(grpcServer, scheduler)
+	pb.RegisterReminderServiceServer(grpcServer, handler)
 
 	lis, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0%v", cfg.GRPCServerAddress))
 	if err != nil {
@@ -111,7 +96,7 @@ func main() {
 		logger.Info("server stopped")
 	}()
 
-	logger.Info("reminders service running", slog.String("port", cfg.GRPCServerAddress))
+	logger.Info("reminder service running", slog.String("port", cfg.GRPCServerAddress))
 	if err := grpcServer.Serve(lis); err != nil {
 		panic(err)
 	}

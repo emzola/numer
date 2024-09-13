@@ -19,12 +19,12 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	InvoiceService_CreateInvoice_FullMethodName  = "/invoice.InvoiceService/CreateInvoice"
-	InvoiceService_GetInvoice_FullMethodName     = "/invoice.InvoiceService/GetInvoice"
-	InvoiceService_UpdateInvoice_FullMethodName  = "/invoice.InvoiceService/UpdateInvoice"
-	InvoiceService_ListInvoices_FullMethodName   = "/invoice.InvoiceService/ListInvoices"
-	InvoiceService_GetDueInvoices_FullMethodName = "/invoice.InvoiceService/GetDueInvoices"
-	InvoiceService_SendInvoice_FullMethodName    = "/invoice.InvoiceService/SendInvoice"
+	InvoiceService_CreateInvoice_FullMethodName           = "/invoice.InvoiceService/CreateInvoice"
+	InvoiceService_GetInvoice_FullMethodName              = "/invoice.InvoiceService/GetInvoice"
+	InvoiceService_UpdateInvoice_FullMethodName           = "/invoice.InvoiceService/UpdateInvoice"
+	InvoiceService_ListInvoices_FullMethodName            = "/invoice.InvoiceService/ListInvoices"
+	InvoiceService_ScheduleInvoiceReminder_FullMethodName = "/invoice.InvoiceService/ScheduleInvoiceReminder"
+	InvoiceService_SendInvoice_FullMethodName             = "/invoice.InvoiceService/SendInvoice"
 )
 
 // InvoiceServiceClient is the client API for InvoiceService service.
@@ -35,7 +35,7 @@ type InvoiceServiceClient interface {
 	GetInvoice(ctx context.Context, in *GetInvoiceRequest, opts ...grpc.CallOption) (*GetInvoiceResponse, error)
 	UpdateInvoice(ctx context.Context, in *UpdateInvoiceRequest, opts ...grpc.CallOption) (*UpdateInvoiceResponse, error)
 	ListInvoices(ctx context.Context, in *ListInvoicesRequest, opts ...grpc.CallOption) (*ListInvoicesResponse, error)
-	GetDueInvoices(ctx context.Context, in *GetDueInvoicesRequest, opts ...grpc.CallOption) (*GetDueInvoicesResponse, error)
+	ScheduleInvoiceReminder(ctx context.Context, in *ScheduleInvoiceReminderRequest, opts ...grpc.CallOption) (*ScheduleInvoiceReminderResponse, error)
 	SendInvoice(ctx context.Context, in *SendInvoiceRequest, opts ...grpc.CallOption) (*SendInvoiceResponse, error)
 }
 
@@ -83,9 +83,9 @@ func (c *invoiceServiceClient) ListInvoices(ctx context.Context, in *ListInvoice
 	return out, nil
 }
 
-func (c *invoiceServiceClient) GetDueInvoices(ctx context.Context, in *GetDueInvoicesRequest, opts ...grpc.CallOption) (*GetDueInvoicesResponse, error) {
-	out := new(GetDueInvoicesResponse)
-	err := c.cc.Invoke(ctx, InvoiceService_GetDueInvoices_FullMethodName, in, out, opts...)
+func (c *invoiceServiceClient) ScheduleInvoiceReminder(ctx context.Context, in *ScheduleInvoiceReminderRequest, opts ...grpc.CallOption) (*ScheduleInvoiceReminderResponse, error) {
+	out := new(ScheduleInvoiceReminderResponse)
+	err := c.cc.Invoke(ctx, InvoiceService_ScheduleInvoiceReminder_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +109,7 @@ type InvoiceServiceServer interface {
 	GetInvoice(context.Context, *GetInvoiceRequest) (*GetInvoiceResponse, error)
 	UpdateInvoice(context.Context, *UpdateInvoiceRequest) (*UpdateInvoiceResponse, error)
 	ListInvoices(context.Context, *ListInvoicesRequest) (*ListInvoicesResponse, error)
-	GetDueInvoices(context.Context, *GetDueInvoicesRequest) (*GetDueInvoicesResponse, error)
+	ScheduleInvoiceReminder(context.Context, *ScheduleInvoiceReminderRequest) (*ScheduleInvoiceReminderResponse, error)
 	SendInvoice(context.Context, *SendInvoiceRequest) (*SendInvoiceResponse, error)
 	mustEmbedUnimplementedInvoiceServiceServer()
 }
@@ -130,8 +130,8 @@ func (UnimplementedInvoiceServiceServer) UpdateInvoice(context.Context, *UpdateI
 func (UnimplementedInvoiceServiceServer) ListInvoices(context.Context, *ListInvoicesRequest) (*ListInvoicesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListInvoices not implemented")
 }
-func (UnimplementedInvoiceServiceServer) GetDueInvoices(context.Context, *GetDueInvoicesRequest) (*GetDueInvoicesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetDueInvoices not implemented")
+func (UnimplementedInvoiceServiceServer) ScheduleInvoiceReminder(context.Context, *ScheduleInvoiceReminderRequest) (*ScheduleInvoiceReminderResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ScheduleInvoiceReminder not implemented")
 }
 func (UnimplementedInvoiceServiceServer) SendInvoice(context.Context, *SendInvoiceRequest) (*SendInvoiceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendInvoice not implemented")
@@ -221,20 +221,20 @@ func _InvoiceService_ListInvoices_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _InvoiceService_GetDueInvoices_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetDueInvoicesRequest)
+func _InvoiceService_ScheduleInvoiceReminder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ScheduleInvoiceReminderRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(InvoiceServiceServer).GetDueInvoices(ctx, in)
+		return srv.(InvoiceServiceServer).ScheduleInvoiceReminder(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: InvoiceService_GetDueInvoices_FullMethodName,
+		FullMethod: InvoiceService_ScheduleInvoiceReminder_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(InvoiceServiceServer).GetDueInvoices(ctx, req.(*GetDueInvoicesRequest))
+		return srv.(InvoiceServiceServer).ScheduleInvoiceReminder(ctx, req.(*ScheduleInvoiceReminderRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -281,8 +281,8 @@ var InvoiceService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _InvoiceService_ListInvoices_Handler,
 		},
 		{
-			MethodName: "GetDueInvoices",
-			Handler:    _InvoiceService_GetDueInvoices_Handler,
+			MethodName: "ScheduleInvoiceReminder",
+			Handler:    _InvoiceService_ScheduleInvoiceReminder_Handler,
 		},
 		{
 			MethodName: "SendInvoice",

@@ -4,7 +4,7 @@ import (
 	"context"
 	"math/rand"
 
-	"github.com/emzola/numer/reminders-service/pkg/discovery"
+	"github.com/emzola/numer/reminder-service/pkg/discovery"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )

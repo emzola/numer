@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/emzola/numer/gateway-service/config"
+	"github.com/emzola/numer/gateway-service/internal/grpcutil"
 	"github.com/emzola/numer/gateway-service/internal/handler"
 	"github.com/emzola/numer/gateway-service/pkg/discovery"
 	consul "github.com/emzola/numer/gateway-service/pkg/discovery/consul"
@@ -52,11 +53,18 @@ func main() {
 	}()
 	defer registry.Deregister(ctx, instanceID, serviceName)
 
+	// Set up connection to the User service
+	userServiceConn, err := grpcutil.ServiceConnection(ctx, "user-service", registry)
+	if err != nil {
+		logger.Error("could not connect to user service", slog.Any("error", err))
+	}
+	defer userServiceConn.Close()
+
 	// Initialize handler and server
 	handler := handler.NewGatewayHandler(registry)
 	srv := &http.Server{
 		Addr:         cfg.Port,
-		Handler:      handler.Routes(),
+		Handler:      handler.Routes(userServiceConn),
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
