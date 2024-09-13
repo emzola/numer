@@ -11,6 +11,7 @@ type userRepository interface {
 	// User management methods
 	CreateUser(ctx context.Context, email, password, role string) (*models.User, error)
 	GetUserByID(ctx context.Context, userID int64) (*models.User, error)
+	GetUserByEmail(ctx context.Context, email string) (*models.User, error)
 	UpdateUser(ctx context.Context, user *models.User) error
 	DeleteUser(ctx context.Context, userID int64) error
 
@@ -44,6 +45,10 @@ func (s *UserService) CreateUser(ctx context.Context, email, password, role stri
 
 func (s *UserService) GetUserByID(ctx context.Context, userID int64) (*models.User, error) {
 	return s.repo.GetUserByID(ctx, userID)
+}
+
+func (s *UserService) GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
+	return s.repo.GetUserByEmail(ctx, email)
 }
 
 func (s *UserService) UpdateUser(ctx context.Context, user *models.User) error {

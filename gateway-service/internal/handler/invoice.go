@@ -207,19 +207,16 @@ func (h *Handler) GetInvoicesHandler(w http.ResponseWriter, r *http.Request) {
 	// Extract user from context
 	user := h.contextGetUser(r)
 
-	// Decode the JSON body into the HTTP request struct
-	var httpReq GetInvoicesHTTPReq
-	err := h.decodeJSON(w, r, &httpReq)
-	if err != nil {
-		h.badRequestResponse(w, r, err)
-		return
-	}
+	// Read url query params
+	qs := r.URL.Query()
+	pageSize := h.ReadInt(qs, "page_size", 10)
+	pageToken := h.ReadString(qs, "page_token", "")
 
 	// Convert the HTTP request into the gRPC ListInvoicesRequest
 	grpcReq := &invoicepb.ListInvoicesRequest{
 		UserId:    user.Id,
-		PageSize:  httpReq.PageSize,
-		PageToken: httpReq.PageToken,
+		PageSize:  int32(pageSize),
+		PageToken: pageToken,
 	}
 
 	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
@@ -247,6 +244,82 @@ func (h *Handler) GetInvoicesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = h.encodeJSON(w, http.StatusOK, envelope{"invoices": invoiceResp}, nil)
+	if err != nil {
+		h.serverErrorResponse(w, r, err)
+	}
+}
+
+func (h *Handler) ScheduleInvoiceReminderHandler(w http.ResponseWriter, r *http.Request) {
+	// Extract invoice ID param
+	invoiceId, err := h.readIDParam(r)
+	if err != nil {
+		h.notFoundResponse(w, r)
+		return
+	}
+
+	// Decode the JSON body into the HTTP request struct
+	var httpReq ScheduleInvoiceReminderHTTPReq
+	err = h.decodeJSON(w, r, &httpReq)
+	if err != nil {
+		h.badRequestResponse(w, r, err)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	// Create gRPC connection to user service
+	userConn, err := grpcutil.ServiceConnection(ctx, "user-service", h.registry)
+	if err != nil {
+		h.serverErrorResponse(w, r, err)
+		return
+	}
+	defer userConn.Close()
+
+	userClient := userpb.NewUserServiceClient(userConn)
+
+	// Create gRPC connection to invoice service
+	invConn, err := grpcutil.ServiceConnection(ctx, "invoice-service", h.registry)
+	if err != nil {
+		h.serverErrorResponse(w, r, err)
+		return
+	}
+	defer invConn.Close()
+
+	invClient := invoicepb.NewInvoiceServiceClient(invConn)
+
+	// Fetch customer email associated with invoice
+	invoiceResp, err := invClient.GetInvoice(ctx, &invoicepb.GetInvoiceRequest{InvoiceId: invoiceId})
+	if err != nil {
+		h.serverErrorResponse(w, r, err)
+		return
+	}
+	customerResp, err := userClient.GetCustomer(ctx, &userpb.GetCustomerRequest{CustomerId: invoiceResp.Invoice.CustomerId})
+	if err != nil {
+		h.serverErrorResponse(w, r, err)
+		return
+	}
+
+	// Prepare the gRPC SendInvoiceRequest
+	grpcReq := &invoicepb.ScheduleInvoiceReminderRequest{
+		InvoiceId:     invoiceResp.Invoice.Id,
+		CustomerEmail: customerResp.Customer.Email,
+		ReminderType:  httpReq.ReminderType,
+	}
+
+	// Call the ScheduleInvoiceReminder gRPC method
+	grpcRes, err := invClient.ScheduleInvoiceReminder(ctx, grpcReq)
+	if err != nil {
+		h.serverErrorResponse(w, r, err)
+		return
+	}
+
+	// Map the gRPC ScheduleInvoiceReminderResponse to the HTTP response
+	resp := ScheduleInvoiceReminderHTTPResp{
+		Status: grpcRes.Status,
+	}
+
+	err = h.encodeJSON(w, http.StatusOK, envelope{"message": resp}, nil)
 	if err != nil {
 		h.serverErrorResponse(w, r, err)
 	}
@@ -384,13 +457,6 @@ type UpdateInvoiceHTTPResp struct {
 	Message   string `json:"message"`
 }
 
-// Struct to capture the HTTP request JSON data
-type GetInvoicesHTTPReq struct {
-	UserID    int64  `json:"user_id"`
-	PageSize  int32  `json:"page_size"`
-	PageToken string `json:"page_token"`
-}
-
 // Struct to capture the HTTP response
 type GetInvoicesHTTPResp struct {
 	Invoices      []InvoiceHTTP `json:"invoices"`
@@ -416,5 +482,14 @@ type InvoiceHTTP struct {
 
 // Struct to capture the HTTP response
 type SendInvoiceHTTPResp struct {
+	Status string `json:"status"`
+}
+
+type ScheduleInvoiceReminderHTTPReq struct {
+	ReminderType int32
+}
+
+// Struct to capture the HTTP response
+type ScheduleInvoiceReminderHTTPResp struct {
 	Status string `json:"status"`
 }

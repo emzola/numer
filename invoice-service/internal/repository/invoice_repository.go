@@ -217,47 +217,6 @@ func (r *InvoiceRepository) ListInvoicesByUserID(ctx context.Context, userID int
 	return invoices, nextPageToken, nil
 }
 
-func (r *InvoiceRepository) GetDueInvoices(ctx context.Context, threshold int32) ([]*models.Invoice, error) {
-	var invoices []*models.Invoice
-
-	query := `
-		SELECT id, user_id, customer_id, invoice_number, status, issue_date, due_date, currency, subtotal, 
-			discount_percentage, discount_amount, total, account_name, account_number, bank_name, routing_number, note, 
-			created_at, updated_at
-	    FROM invoices 
-		WHERE due_date BETWEEN NOW()::date AND NOW()::date + INTERVAL '$1 days'
-		ORDER BY issue_date`
-
-	rows, err := r.db.QueryContext(ctx, query, threshold)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var invoice models.Invoice
-		err := rows.Scan(
-			&invoice.ID, &invoice.UserID, &invoice.CustomerID, &invoice.InvoiceNumber, &invoice.Status, &invoice.IssueDate,
-			&invoice.DueDate, &invoice.Currency, &invoice.Subtotal, &invoice.DiscountPercentage, &invoice.DiscountAmount, &invoice.Total,
-			&invoice.AccountName, &invoice.AccountNumber, &invoice.BankName, &invoice.RoutingNumber, &invoice.Note, &invoice.CreatedAt,
-			&invoice.UpdatedAt,
-		)
-		if err != nil {
-			return nil, err
-		}
-
-		// Fetch invoice items for each invoice (if necessary)
-		invoice.Items, err = r.fetchInvoiceItems(ctx, invoice.ID)
-		if err != nil {
-			return nil, err
-		}
-
-		invoices = append(invoices, &invoice)
-	}
-
-	return invoices, nil
-}
-
 func (r *InvoiceRepository) fetchInvoiceItems(ctx context.Context, invoiceID int64) ([]*models.InvoiceItem, error) {
 	var items []*models.InvoiceItem
 	query := `

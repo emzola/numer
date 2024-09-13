@@ -19,14 +19,15 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	UserService_CreateUser_FullMethodName     = "/user.UserService/CreateUser"
-	UserService_GetUser_FullMethodName        = "/user.UserService/GetUser"
-	UserService_UpdateUser_FullMethodName     = "/user.UserService/UpdateUser"
-	UserService_DeleteUser_FullMethodName     = "/user.UserService/DeleteUser"
-	UserService_CreateCustomer_FullMethodName = "/user.UserService/CreateCustomer"
-	UserService_GetCustomer_FullMethodName    = "/user.UserService/GetCustomer"
-	UserService_UpdateCustomer_FullMethodName = "/user.UserService/UpdateCustomer"
-	UserService_DeleteCustomer_FullMethodName = "/user.UserService/DeleteCustomer"
+	UserService_CreateUser_FullMethodName       = "/user.UserService/CreateUser"
+	UserService_GetUser_FullMethodName          = "/user.UserService/GetUser"
+	UserService_UpdateUser_FullMethodName       = "/user.UserService/UpdateUser"
+	UserService_DeleteUser_FullMethodName       = "/user.UserService/DeleteUser"
+	UserService_AuthenticateUser_FullMethodName = "/user.UserService/AuthenticateUser"
+	UserService_CreateCustomer_FullMethodName   = "/user.UserService/CreateCustomer"
+	UserService_GetCustomer_FullMethodName      = "/user.UserService/GetCustomer"
+	UserService_UpdateCustomer_FullMethodName   = "/user.UserService/UpdateCustomer"
+	UserService_DeleteCustomer_FullMethodName   = "/user.UserService/DeleteCustomer"
 )
 
 // UserServiceClient is the client API for UserService service.
@@ -38,6 +39,7 @@ type UserServiceClient interface {
 	GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*UserResponse, error)
 	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UserResponse, error)
 	DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*DeleteUserResponse, error)
+	AuthenticateUser(ctx context.Context, in *AuthenticateUserRequest, opts ...grpc.CallOption) (*AuthenticateUserResponse, error)
 	// Customer endpoints
 	CreateCustomer(ctx context.Context, in *CreateCustomerRequest, opts ...grpc.CallOption) (*CustomerResponse, error)
 	GetCustomer(ctx context.Context, in *GetCustomerRequest, opts ...grpc.CallOption) (*CustomerResponse, error)
@@ -89,6 +91,15 @@ func (c *userServiceClient) DeleteUser(ctx context.Context, in *DeleteUserReques
 	return out, nil
 }
 
+func (c *userServiceClient) AuthenticateUser(ctx context.Context, in *AuthenticateUserRequest, opts ...grpc.CallOption) (*AuthenticateUserResponse, error) {
+	out := new(AuthenticateUserResponse)
+	err := c.cc.Invoke(ctx, UserService_AuthenticateUser_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *userServiceClient) CreateCustomer(ctx context.Context, in *CreateCustomerRequest, opts ...grpc.CallOption) (*CustomerResponse, error) {
 	out := new(CustomerResponse)
 	err := c.cc.Invoke(ctx, UserService_CreateCustomer_FullMethodName, in, out, opts...)
@@ -134,6 +145,7 @@ type UserServiceServer interface {
 	GetUser(context.Context, *GetUserRequest) (*UserResponse, error)
 	UpdateUser(context.Context, *UpdateUserRequest) (*UserResponse, error)
 	DeleteUser(context.Context, *DeleteUserRequest) (*DeleteUserResponse, error)
+	AuthenticateUser(context.Context, *AuthenticateUserRequest) (*AuthenticateUserResponse, error)
 	// Customer endpoints
 	CreateCustomer(context.Context, *CreateCustomerRequest) (*CustomerResponse, error)
 	GetCustomer(context.Context, *GetCustomerRequest) (*CustomerResponse, error)
@@ -157,6 +169,9 @@ func (UnimplementedUserServiceServer) UpdateUser(context.Context, *UpdateUserReq
 }
 func (UnimplementedUserServiceServer) DeleteUser(context.Context, *DeleteUserRequest) (*DeleteUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteUser not implemented")
+}
+func (UnimplementedUserServiceServer) AuthenticateUser(context.Context, *AuthenticateUserRequest) (*AuthenticateUserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AuthenticateUser not implemented")
 }
 func (UnimplementedUserServiceServer) CreateCustomer(context.Context, *CreateCustomerRequest) (*CustomerResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateCustomer not implemented")
@@ -255,6 +270,24 @@ func _UserService_DeleteUser_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_AuthenticateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AuthenticateUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).AuthenticateUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_AuthenticateUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).AuthenticateUser(ctx, req.(*AuthenticateUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _UserService_CreateCustomer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateCustomerRequest)
 	if err := dec(in); err != nil {
@@ -349,6 +382,10 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteUser",
 			Handler:    _UserService_DeleteUser_Handler,
+		},
+		{
+			MethodName: "AuthenticateUser",
+			Handler:    _UserService_AuthenticateUser_Handler,
 		},
 		{
 			MethodName: "CreateCustomer",

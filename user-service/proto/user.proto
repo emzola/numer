@@ -8,6 +8,7 @@ service UserService {
     rpc GetUser(GetUserRequest) returns (UserResponse);
     rpc UpdateUser(UpdateUserRequest) returns (UserResponse);
     rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse);
+    rpc AuthenticateUser(AuthenticateUserRequest) returns (AuthenticateUserResponse);
 
     // Customer endpoints
     rpc CreateCustomer(CreateCustomerRequest) returns (CustomerResponse);
@@ -49,6 +50,18 @@ message DeleteUserRequest {
 
 message DeleteUserResponse {
     string message = 1;
+}
+
+message AuthenticateUserRequest {
+    string email = 1;
+    string password = 2;
+}
+  
+message AuthenticateUserResponse {
+    bool valid = 1;        
+    int64 user_id = 2;    
+    string email = 3;     
+    string role = 4;  
 }
 
 // Customer messages

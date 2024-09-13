@@ -4,9 +4,9 @@ go 1.22.0
 
 require (
 	github.com/emzola/numer/activity-service v0.0.0-20240911191836-59cb32b44bda
-	github.com/emzola/numer/invoice-service v0.0.0-20240911191836-59cb32b44bda
+	github.com/emzola/numer/invoice-service v0.0.0-20240913051324-94f175801702
 	github.com/emzola/numer/stats-service v0.0.0-20240911191836-59cb32b44bda
-	github.com/emzola/numer/user-service v0.0.0-20240911191836-59cb32b44bda
+	github.com/emzola/numer/user-service v0.0.0-20240913051324-94f175801702
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/hashicorp/consul/api v1.29.4
 	github.com/julienschmidt/httprouter v1.3.0

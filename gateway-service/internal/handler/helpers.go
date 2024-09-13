@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -124,4 +125,28 @@ func convertInvoiceItems(items []*invoicepb.InvoiceItem) []InvoiceItem {
 		}
 	}
 	return httpItems
+}
+
+// ReadString reads a url query param and returns a string
+func (h *Handler) ReadString(qs url.Values, key string, defaultValue string) string {
+	s := qs.Get(key)
+	if s == "" {
+		return defaultValue
+	}
+	return s
+}
+
+// ReadString reads a url query param and returns an int
+func (h *Handler) ReadInt(qs url.Values, key string, defaultValue int) int {
+	s := qs.Get(key)
+	if s == "" {
+		return defaultValue
+	}
+
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		return defaultValue
+	}
+
+	return i
 }

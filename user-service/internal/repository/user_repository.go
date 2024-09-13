@@ -49,6 +49,17 @@ func (r *UserRepository) GetUserByID(ctx context.Context, userID int64) (*models
 	return &user, err
 }
 
+func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
+	var user models.User
+	err := r.db.QueryRowContext(ctx,
+		"SELECT id, email, hashed_password, role, created_at, updated_at FROM users WHERE email = $1",
+		email).Scan(&user.ID, &user.Email, &user.HashedPassword, &user.Role, &user.CreatedAt, &user.UpdatedAt)
+	if err == sql.ErrNoRows {
+		return &models.User{}, errors.New("user not found")
+	}
+	return &user, err
+}
+
 func (r *UserRepository) UpdateUser(ctx context.Context, user *models.User) error {
 	_, err := r.db.ExecContext(ctx,
 		"UPDATE users SET email = $1, hashed_password = $2, role = $3, updated_at = NOW() WHERE id = $4",

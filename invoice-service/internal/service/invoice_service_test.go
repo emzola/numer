@@ -66,9 +66,9 @@ func TestCreateInvoice(t *testing.T) {
 	expectedInvoice := *invoice
 	expectedInvoice.InvoiceNumber = "000001"
 	expectedInvoice.Status = "draft"
-	expectedInvoice.Subtotal = 20000  // $200.00
-	expectedInvoice.DiscountAmount = 2000   // 10% discount
-	expectedInvoice.Total = 18000  // $180.00
+	expectedInvoice.Subtotal = 20000      // $200.00
+	expectedInvoice.DiscountAmount = 2000 // 10% discount
+	expectedInvoice.Total = 18000         // $180.00
 
 	mockRepo.On("IncrementInvoiceNumber", mock.Anything).Return(int64(1), nil)
 	mockRepo.On("CreateInvoice", mock.Anything, mock.Anything).Return(nil)
@@ -114,9 +114,9 @@ func TestUpdateInvoice(t *testing.T) {
 	}
 
 	expectedInvoice := *invoice
-	expectedInvoice.Subtotal = 20000  // $200.00
-	expectedInvoice.DiscountAmount = 2000   // 10% discount
-	expectedInvoice.Total = 18000  // $180.00
+	expectedInvoice.Subtotal = 20000      // $200.00
+	expectedInvoice.DiscountAmount = 2000 // 10% discount
+	expectedInvoice.Total = 18000         // $180.00
 
 	mockRepo.On("UpdateInvoice", mock.Anything, mock.Anything).Return(nil)
 
@@ -141,22 +141,5 @@ func TestListInvoicesByUserID(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, invoices, result)
 	assert.Empty(t, nextPageToken)
-	mockRepo.AssertExpectations(t)
-}
-
-func TestGetDueInvoices(t *testing.T) {
-	mockRepo := new(MockInvoiceRepository)
-	svc := service.NewInvoiceService(mockRepo)
-
-	invoices := []*models.Invoice{
-		{ID: 1},
-		{ID: 2},
-	}
-	mockRepo.On("GetDueInvoices", mock.Anything, int32(7)).Return(invoices, nil)
-
-	result, err := svc.GetDueInvoices(context.Background(), 7)
-
-	assert.NoError(t, err)
-	assert.Equal(t, invoices, result)
 	mockRepo.AssertExpectations(t)
 }

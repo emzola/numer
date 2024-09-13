@@ -22,12 +22,12 @@ github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/emzola/numer/activity-service v0.0.0-20240911191836-59cb32b44bda h1:ms/IeA0SDzfq6Nv7ABfIVBCeAvX3mIkG55Hj1eTQT0Q=
 github.com/emzola/numer/activity-service v0.0.0-20240911191836-59cb32b44bda/go.mod h1:C0PmNFKPb7mlnn24k98DRP79TN8RbzDgRt87C5igm1A=
-github.com/emzola/numer/invoice-service v0.0.0-20240911191836-59cb32b44bda h1:mYwsVKD/u38AdZaVD469lBaEC4hqteSxwQraZ3QFYJc=
-github.com/emzola/numer/invoice-service v0.0.0-20240911191836-59cb32b44bda/go.mod h1:VRw3Z4gqJfaOnhB9QjK55mxacZKhJvJc7FMs/9NN/Vk=
+github.com/emzola/numer/invoice-service v0.0.0-20240913051324-94f175801702 h1:upqJDtONysw6QA5sryajK6burooFfBitq1pFq09VpJQ=
+github.com/emzola/numer/invoice-service v0.0.0-20240913051324-94f175801702/go.mod h1:z/WEiYpx+3332eg1O+W61ii7Oeji5PnOh7+V3N2WgGc=
 github.com/emzola/numer/stats-service v0.0.0-20240911191836-59cb32b44bda h1:wI8WYo+xVGw5PF4YAEwKATVYFvfI+du8RX3LRpe/IuI=
 github.com/emzola/numer/stats-service v0.0.0-20240911191836-59cb32b44bda/go.mod h1:rkSI5uzmWt1euliR9UZQ6ACIYtoVfEWBwKzmWTh1ysQ=
-github.com/emzola/numer/user-service v0.0.0-20240911191836-59cb32b44bda h1:rwUYs0Q1AeEHmW2yPgcq7U1pFH7LC8r2BvyijP6mP0Y=
-github.com/emzola/numer/user-service v0.0.0-20240911191836-59cb32b44bda/go.mod h1:QXE6K9/dEEgkuxQOEtzX6Lkk73iwkrPIlrt1Zpdj5aM=
+github.com/emzola/numer/user-service v0.0.0-20240913051324-94f175801702 h1:1MWhQOHyL84tCMFfajDf1K3sBR9zYzW8srj2T8j74xg=
+github.com/emzola/numer/user-service v0.0.0-20240913051324-94f175801702/go.mod h1:qWqsXv1UmC5cbd79qp6MGxo0DuGFJ3u7i4zrUlEGabQ=
 github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5KwzbycvMj4=
 github.com/fatih/color v1.9.0/go.mod h1:eQcE1qtQxscV5RaZvpXrrb8Drkc3/DdQ+uUYCNjL+zU=
 github.com/fatih/color v1.13.0/go.mod h1:kLAiJbzzSOZDVNGyDpeOxJ47H46qBXwg5ILebYFFOfk=
@@ -168,8 +168,8 @@ github.com/sirupsen/logrus v1.2.0/go.mod h1:LxeOpSwHxABJmUn/MG1IvRgCAasNZTLOkJPx
 github.com/sirupsen/logrus v1.4.2/go.mod h1:tLMulIdttU9McNUspp0xgXVQah82FyeX6MwdIuYE2rE=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.1.1/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
-github.com/stretchr/objx v0.5.0 h1:1zr/of2m5FGMsad5YfcqgdqdWrIhu+EBEJRhR1U7z/c=
-github.com/stretchr/objx v0.5.0/go.mod h1:Yh+to48EsGEfYuaHDzXPcE3xhTkx73EhmCGUpEOglKo=
+github.com/stretchr/objx v0.5.2 h1:xuMeJ0Sdp5ZMRXx/aWO6RZxdr3beISkG5/G/aIRr3pY=
+github.com/stretchr/objx v0.5.2/go.mod h1:FRsXN1f5AsAjCGJKqEizvkpNtU+EGNCLh3NxZ/8L+MA=
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81PSLYec5m4=

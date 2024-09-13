@@ -6,6 +6,7 @@ import (
 	"github.com/emzola/numer/user-service/internal/models"
 	"github.com/emzola/numer/user-service/internal/service"
 	pb "github.com/emzola/numer/user-service/proto"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserHandler struct {
@@ -61,6 +62,27 @@ func (h *UserHandler) DeleteUser(ctx context.Context, req *pb.DeleteUserRequest)
 		return nil, err
 	}
 	return &pb.DeleteUserResponse{Message: "user successfully deleted"}, nil
+}
+
+func (h *UserHandler) AuthenticateUser(ctx context.Context, req *pb.AuthenticateUserRequest) (*pb.AuthenticateUserResponse, error) {
+	user, err := h.userService.GetUserByEmail(ctx, req.Email)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check password
+	err = bcrypt.CompareHashAndPassword([]byte(user.HashedPassword), []byte(req.Password))
+	if err != nil {
+		return &pb.AuthenticateUserResponse{Valid: false}, err
+	}
+
+	// Successful authentication
+	return &pb.AuthenticateUserResponse{
+		Valid:  true,
+		UserId: user.ID,
+		Email:  user.Email,
+		Role:   user.Role,
+	}, nil
 }
 
 // Customer Endpoints

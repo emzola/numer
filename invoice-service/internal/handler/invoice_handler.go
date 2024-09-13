@@ -13,6 +13,7 @@ import (
 	reminderpb "github.com/emzola/numer/reminder-service/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 const (
@@ -174,7 +175,7 @@ func (h *InvoiceHandler) ScheduleInvoiceReminder(ctx context.Context, req *pb.Sc
 	_, err = h.reminderClient.ScheduleReminder(ctx, &reminderpb.ScheduleReminderRequest{
 		InvoiceId:     req.InvoiceId,
 		CustomerEmail: req.CustomerEmail,
-		ReminderTime:  reminderTime.Format(time.RFC3339),
+		ReminderTime:  timestamppb.New(reminderTime),
 		Message:       message,
 	})
 	if err != nil {
@@ -197,7 +198,7 @@ func (h *InvoiceHandler) SendInvoiceEmail(ctx context.Context, req *pb.SendInvoi
 		invoice.ID, invoice.Total, invoice.DueDate, invoice.Note)
 
 	// Retry sending email
-	err = h.retrySendEmail(ctx, "test@example.com", "Your Invoice", message)
+	err = h.retrySendEmail(ctx, req.CustomerEmail, "Your Invoice", message)
 	if err != nil {
 		return nil, err
 	}

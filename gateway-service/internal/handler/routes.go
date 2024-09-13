@@ -18,13 +18,12 @@ func (h *Handler) Routes(userServiceConn *grpc.ClientConn) http.Handler {
 	router.HandlerFunc(http.MethodGet, "/invoices/:id", h.authMiddleware(h.GetInvoiceHandler, userServiceConn))
 	router.HandlerFunc(http.MethodPatch, "/invoices/:id", h.authMiddleware(h.UpdateInvoiceHandler, userServiceConn))
 	router.HandlerFunc(http.MethodPost, "/invoices/:id/send", h.authMiddleware(h.SendInvoiceHandler, userServiceConn))
+	router.HandlerFunc(http.MethodPost, "/invoices/:id/reminder", h.authMiddleware(h.ScheduleInvoiceReminderHandler, userServiceConn))
 
 	router.HandlerFunc(http.MethodGet, "/stats", h.authMiddleware(h.GetStatsHandler, userServiceConn))
 
 	router.HandlerFunc(http.MethodGet, "/activities/user", h.authMiddleware(h.GetUserActivitiesHandler, userServiceConn))
 	router.HandlerFunc(http.MethodGet, "/activities/invoice/:id", h.authMiddleware(h.GetInvoiceActivitiesHandler, userServiceConn))
-
-	router.HandlerFunc(http.MethodPost, "/reminders", h.authMiddleware(h.GetInvoiceActivitiesHandler, userServiceConn))
 
 	router.HandlerFunc(http.MethodPost, "/users", h.CreateUserHandler)
 	router.HandlerFunc(http.MethodGet, "/users/:id", h.authMiddleware(h.GetUserHandler, userServiceConn))
@@ -35,6 +34,8 @@ func (h *Handler) Routes(userServiceConn *grpc.ClientConn) http.Handler {
 	router.HandlerFunc(http.MethodGet, "/customers/:id", h.authMiddleware(h.GetCustomerHandler, userServiceConn))
 	router.HandlerFunc(http.MethodPatch, "/customers/:id", h.authMiddleware(h.UpdateCustomerHandler, userServiceConn))
 	router.HandlerFunc(http.MethodDelete, "/customers/:id", h.authMiddleware(h.DeleteCustomerHandler, userServiceConn))
+
+	router.HandlerFunc(http.MethodPost, "/tokens/authentication", h.LoginUserHandler)
 
 	return router
 }
